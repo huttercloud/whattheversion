@@ -105,6 +105,7 @@ class DockerRepository(object):
         """
 
         found_tags = []
+        last_tags = []
         url = f'{self.get_v2_base_url()}/tags/list'
 
         # return all tags
@@ -112,12 +113,12 @@ class DockerRepository(object):
             parameters = dict(
                 # lets try to get as many tags as possible per request
                 # docker hub allows more then 1000 per request
-                # quay.io limits it to 50 per request
-                limit=1000
+                n=10000
             )
             # if we have tags returned, make sure request starts
             # from that tag
             try:
+                # quay.io and google dont care about pagination...
                 parameters['last'] = found_tags[-1]
             except Exception as e:
                 pass
@@ -126,9 +127,12 @@ class DockerRepository(object):
             r.raise_for_status()
 
             # if no more tags are returned abort the loop
-            if not r.json()['tags']:
+            # also abort the loop if the returned tags are the same
+            # as the last returned tags (e.g. if pagination is ignored by the registry
+            if not r.json()['tags'] or r.json()['tags'] == last_tags:
                 break
 
+            last_tags = r.json()['tags']
             found_tags += r.json()['tags']
 
         reg = re.compile(self.regexp)
