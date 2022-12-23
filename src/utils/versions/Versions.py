@@ -7,7 +7,7 @@ from ..helm import HelmRepository
 
 @dataclass
 class VersionsRequest(object):
-    git: Optional[List[GitRepository]] = None
-    docker: Optional[List[DockerRepository]] = None
-    helm: Optional[List[HelmRepository]] = None
+    git: Optional[List[GitRepository]] = list()
+    docker: Optional[List[DockerRepository]] = list()
+    helm: Optional[List[HelmRepository]] = list()
 

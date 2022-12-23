@@ -71,13 +71,33 @@ class DockerRepository(object):
 
         found_tags = []
         url=f'https://quay.io/api/v1/repository/{self.get_repository_name_from_repository()}/tag'
-
+        page = 1
         while True:
+            parameters = dict(
+                limit=100,
+                page=page
+            )
 
-        r = requests.get(url=url)
-        r.raise_for_status()
+            r = requests.get(url=url, params=parameters)
+            r.raise_for_status()
 
-        print(r.json())
+            if  r.json()['tags'] == []:
+                break
+
+            found_tags += r.json()['tags']
+            page += 1
+
+        filtered_tags = {}
+        if self.regexp:
+            r = re.compile(self.regexp)
+        for t in found_tags:
+
+            if r:
+                if not r.match(t['name']):
+                    continue
+            filtered_tags[t['name']] = datetime.strptime(t['last_modified'], '%a, %d %b %Y %H:%M:%S -0000')
+
+        return filtered_tags
 
     def get_all_tags_from_v2_registry(self) -> List[str]:
         """
@@ -89,7 +109,6 @@ class DockerRepository(object):
 
         found_tags = []
         url = f'{self.get_v2_base_url()}/tags/list'
-        page = 1
 
         # return all tags
         while True:
@@ -149,7 +168,10 @@ class DockerRepository(object):
         r = requests.get(url=url, headers=self.prepare_http_headers_for_registry())
         r.raise_for_status()
 
-        return datetime.strptime(r.json()['created'][:-4], '%Y-%m-%dT%H:%M:%S.%f')
+        # only parse day and time information "YYYY-08-07THH:MM:SS" (length: 19)
+        ts = r.json()["created"][0:19]
+
+        return datetime.strptime(ts, '%Y-%m-%dT%H:%M:%S')
 
     def get_all_tags(self) -> List[str]:
         """
@@ -159,19 +181,18 @@ class DockerRepository(object):
         """
         tags_with_timestamps = dict()
         if self.get_registry_from_repository() == 'quay.io':
-            tags = self.get_all_tags_from_quay_io()
+            tags_with_timestamps = self.get_all_tags_from_quay_io()
         else:
             # run tag retrieval for v2 registry
             tags = self.get_all_tags_from_v2_registry()
 
             # the tags aren't sorted by creation date
             # to sort them we need to retrieve the manifest of each tag and
-            # get it's creation date
+            # get its creation date
             tags_with_timestamps = dict()
             for t in tags:
                 digest = self.get_v2_manifest_digest(tag=t)
                 ts = self.get_v2_blob_creation_date(digest=digest)
-                print(f'{t} - {digest} - {ts}')
                 tags_with_timestamps[t] = ts
 
         return [a[0] for a in sorted(tags_with_timestamps.items(), key=lambda i: i[1])]

@@ -50,25 +50,25 @@ if __name__ == '__main__':
                         regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$',
                     )
                 ],
-                docker=[
-                    # dict(
-                    #     repository='registry.hub.docker.com/linuxserver/sonarr',
-                    #     regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
-                    # ),
-                    dict(
-                        # https://quay.io/api/v1/repository/oauth2-proxy/oauth2-proxy/tag/
-                        repository='quay.io/oauth2-proxy/oauth2-proxy',
-                        regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
-                    ),
-                    # dict(
-                    #     repository='registry.hub.docker.com/filebrowser/filebrowser',
-                    #     regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$'
-                    # ),
-                    # dict(
-                    #     repository='registry.hub.docker.com/sebastianhutter/sabnzbd',
-                    #     regexp='^.{8}$'
-                    # ),
-                ]
+                # docker=[
+                #     dict(
+                #         repository='registry.hub.docker.com/linuxserver/sonarr',
+                #         regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
+                #     ),
+                #     dict(
+                #         # https://quay.io/api/v1/repository/oauth2-proxy/oauth2-proxy/tag/
+                #         repository='quay.io/oauth2-proxy/oauth2-proxy',
+                #         regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
+                #     ),
+                #     # dict(
+                #     #     repository='registry.hub.docker.com/filebrowser/filebrowser',
+                #     #     regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$'
+                #     # ),
+                #     # dict(
+                #     #     repository='registry.hub.docker.com/sebastianhutter/sabnzbd',
+                #     #     regexp='^.{8}$'
+                #     # ),
+                # ]
             )
         )
     )
