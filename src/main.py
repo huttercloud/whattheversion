@@ -31,7 +31,8 @@ def handler(event, context):
         for d in request.docker:
             print(f'{d.repository}: {d.get_latest_tag()}')
 
-        print('yarp')
+        for h in request.helm:
+            print(f'{h.repository}: {h.get_latest_tag()}')
 
     except Exception as e:
         logging.error(e)
@@ -50,25 +51,32 @@ if __name__ == '__main__':
                         regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$',
                     )
                 ],
-                # docker=[
+                docker=[
                 #     dict(
                 #         repository='registry.hub.docker.com/linuxserver/sonarr',
-                #         regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
+                #         regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$',
                 #     ),
-                #     dict(
-                #         # https://quay.io/api/v1/repository/oauth2-proxy/oauth2-proxy/tag/
-                #         repository='quay.io/oauth2-proxy/oauth2-proxy',
-                #         regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
-                #     ),
+                    dict(
+                        repository='quay.io/oauth2-proxy/oauth2-proxy',
+                        regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
+                    ),
                 #     # dict(
                 #     #     repository='registry.hub.docker.com/filebrowser/filebrowser',
-                #     #     regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$'
+                #     #     regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
                 #     # ),
                 #     # dict(
                 #     #     repository='registry.hub.docker.com/sebastianhutter/sabnzbd',
-                #     #     regexp='^.{8}$'
+                #     #     regexp='^.{8}$',
                 #     # ),
-                # ]
+                ],
+                helm=[
+                    dict(
+                        repository='charts.external-secrets.io',
+                        chart='external-secrets',
+                        regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$',
+                    ),
+                ]
+
             )
         )
     )

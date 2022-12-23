@@ -10,7 +10,7 @@ class GitRepository(object):
     retrieve latest git tag from public git repository
     """
     repository: str
-    regexp: Optional[str] = None
+    regexp: str
 
     def get_all_tags(self) -> List[str]:
         g = Git()
@@ -24,9 +24,6 @@ class GitRepository(object):
 
     def get_latest_tag(self) -> str:
         tags = self.get_all_tags()
-
-        if not self.regexp:
-            return tags[-1]
 
         r = re.compile(self.regexp)
         for t in reversed(tags):

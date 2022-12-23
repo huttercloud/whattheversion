@@ -10,7 +10,7 @@ class DockerRepository(object):
     retrieve latest docker tag from docker repository
     """
     repository: str
-    regexp: Optional[str] = None
+    regexp: str
 
     def get_registry_from_repository(self) -> str:
         """
@@ -88,13 +88,10 @@ class DockerRepository(object):
             page += 1
 
         filtered_tags = {}
-        if self.regexp:
-            r = re.compile(self.regexp)
+        reg = re.compile(self.regexp)
         for t in found_tags:
-
-            if r:
-                if not r.match(t['name']):
-                    continue
+            if not reg.match(t['name']):
+                continue
             filtered_tags[t['name']] = datetime.strptime(t['last_modified'], '%a, %d %b %Y %H:%M:%S -0000')
 
         return filtered_tags
@@ -134,9 +131,8 @@ class DockerRepository(object):
 
             found_tags += r.json()['tags']
 
-        if self.regexp:
-            r = re.compile(self.regexp)
-            found_tags = list(filter(r.match, found_tags))
+        reg = re.compile(self.regexp)
+        found_tags = list(filter(reg.match, found_tags))
 
         return found_tags
 
