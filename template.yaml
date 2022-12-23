@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  whattheversion
+
+  try to get the latest version of the specified git repo, docker image or helm chart
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+
+Parameters:
+  HostedZoneId:
+    Type: String
+    Default: Z3CBRYU3UXXFKT
+  DomainName:
+    Type: String
+    Default: whattheversion.hutter.cloud
+
+Resources:
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainName
+      DomainValidationOptions:
+        - DomainName: !Ref DomainName
+          HostedZoneId: !Ref HostedZoneId
+      ValidationMethod: DNS
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Domain:
+        DomainName: !Ref DomainName
+        CertificateArn: !Ref Certificate
+        EndpointConfiguration: REGIONAL
+        Route53:
+          HostedZoneId: !Ref HostedZoneId
+
+  Function:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: src/
+      Handler: main.lambda_handler
+      Runtime: python3.9
+      Architectures: ['x86_64']
+      Events:
+        HelloWorldEvent1:
+          Type: HttpApi 
+          Properties:
+            Path: /
+            Method: post
+            ApiId: !Ref HttpApi

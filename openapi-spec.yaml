@@ -1,0 +1,32 @@
+#swagger.yaml
+openapi: "3.0.1"
+info:
+  title: "Test SAM API"
+  version: "1.0.0"
+
+paths:
+  /helloGet:
+    get:
+      responses:
+        default:
+          description: "Default response for GET /helloGet"
+      x-amazon-apigateway-integration:
+        payloadFormatVersion: "2.0"
+        type: "aws_proxy"
+        httpMethod: "GET"
+        uri: 
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HelloWorldFunction.Arn}/invocations"
+        connectionType: "INTERNET"
+
+x-amazon-apigateway-cors:
+  allowMethods:
+  - "*"
+  allowHeaders:
+  - "*"
+  exposeHeaders:
+  - "*"
+  maxAge: 0
+  allowCredentials: false
+  allowOrigins:
+  - "https://1.0.0.127:4443"
+x-amazon-apigateway-importexport-version: "1.0"
