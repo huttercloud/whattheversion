@@ -17,7 +17,6 @@ from git.cmd import Git
 
 
 def handler(event, context):
-    print('weifniognioewnfonewiofnweionoifnweiofnionoi')
     g = Git()
     tags = list()
     # retrieve all tags, last element in list is the newest tag
@@ -26,3 +25,7 @@ def handler(event, context):
         tags.append(r[ti:])
     
     return return_hallo(tags)
+
+
+if __name__ == '__main__':
+    handler({},{})
