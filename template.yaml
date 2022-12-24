@@ -70,7 +70,7 @@ Resources:
   GitVersion:
     Type: AWS::Serverless::Function 
     Properties:
-      CodeUri: src/git
+      CodeUri: src/git-api
       Handler: main.handler
       Runtime: python3.9
       Architectures: ['x86_64']
@@ -82,7 +82,7 @@ Resources:
         # thanks to: https://github.com/binxio/aws-lambda-git
         Variables:
           LD_LIBRARY_PATH: "/opt/git/lib:$LD_LIBRARY_PATH"
-          PATH: "/opt/git/bin:${PATH}"
+          PATH: "/opt/git/bin:$PATH"
       Events:
         WhatTheVersionEvent:
           Type: HttpApi 

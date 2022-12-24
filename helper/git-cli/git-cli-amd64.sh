@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# execute this script on an amd64 machine to create a lambda compatible git bin
+# execute this script on an amd64 machine to create a lambda compatible git bin and libs
 # 
 
 docker rm -f git-builder

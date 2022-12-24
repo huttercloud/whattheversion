@@ -2,7 +2,7 @@
 
 """
     receives a post payload (lambda invocation url
-    checks the given helm repo, docker registry or git repo (public repos only)
+    checks the given helm repo, docker registry or git-api repo (public repos only)
     and tries to return the most up to date version.
 
     the lambda function expects a json formated body
@@ -53,7 +53,7 @@ if __name__ == '__main__':
             dict(
                 git=[
                     dict(
-                        repository='github.com/clinton-hall/nzbToMedia.git',
+                        repository='github.com/clinton-hall/nzbToMedia.git-api',
                         regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$',
                     )
                 ],
