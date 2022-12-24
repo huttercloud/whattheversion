@@ -1,4 +1,1 @@
-GitPython
-requests
-pydantic
-pyyaml
+

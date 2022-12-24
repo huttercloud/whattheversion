@@ -7,7 +7,7 @@ from typing import List, Optional
 @dataclass()
 class GitRepository(object):
     """
-    retrieve latest git tag from public git repository
+    retrieve latest git-api tag from public git-api repository
     """
     repository: str
     regexp: str
