@@ -8,7 +8,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
 dist/
 downloads/
@@ -255,7 +254,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
 dist/
 downloads/
@@ -378,3 +376,15 @@ $RECYCLE.BIN/
 */build/*
 
 # End of https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
+
+# ignore git bin and lib folder
+src/git/bin
+src/git/lib
+libraries.zip
+
+
+
+dependencies/python/*
+!dependencies/python/requirements.txt
+build/*
+!helper/build/*

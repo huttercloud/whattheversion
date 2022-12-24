@@ -13,13 +13,19 @@ import json
 import logging
 import requests
 
-from utils.versions import VersionsRequest
+
+import pydantic
+from whattheversion.hallo import return_hallo
+
+#from utils.versions import VersionsRequest
 
 
 def handler(event, context):
     """
         lambda handler
     """
+
+    return return_hallo(event)
 
 
     try:
