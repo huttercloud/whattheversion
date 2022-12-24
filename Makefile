@@ -1,31 +1,34 @@
 #
 # thanks to: https://github.com/binxio/aws-lambda-git
 #
+.PHONY: deploy dev build start-api dependencies generate-git-zip layers layer-git layer-python
 
-deploy: build-remote
+deploy: build
 	sam deploy
-dev: build-local start-api
-build-remote: dependencies git-remote build
-build-local: dependencies git-remote build
+dev: build start-api
 
 # build with sma
-build:
+build: layers
 	sam build --use-container 
 
 start-api:
 	sam local start-api --warm-containers EAGER
 # install dependencies and copyh layer code
-dependencies: dependencies/python/requirements.txt 
-	cp -a src/whattheversion dependencies/python/whattheversion
-	venv/bin/pip install -r dependencies/python/requirements.txt -t dependencies/python/
 
-# setup git bin and libs for deployment
-# the referenced zip was created on a linux amd64 box to ensure compatibility with
-# the lambda execution environment
-git: helper/build/git-cli-amd64.zip
-	-rm -rf "$(PWD)/src/git/bin"
-	-rm -rf "$(PWD)/src/git/lib"
-	unzip helper/build/git-cli-amd64.zip -d "$(PWD)/src/git/"
+# create layer for git binary, the binary will be available in /opt/git/bin, the libs in /opt/git/lib.
+
+layers: layer-git layer-python
+
+layer-git:
+	-rm -rf layers/git
+	mkdir -p layers/git/git
+	unzip helper/git-cli/git-cli-amd64.zip -d layers/git/git/
+
+layer-python:
+	-rm -rf layers/whattheversion
+	mkdir -p layers/whattheversion/python
+	cp -a src/whattheversion layers/whattheversion/python/whattheversion
+	venv/bin/pip install -r layers/whattheversion/python/whattheversion/requirements.txt -t layers/whattheversion/python/
 
 generate-git-zip:
-	cd helper/build ; bash git-cli-amd64.sh
+	cd helper/git-cli ; bash git-cli-amd64.sh

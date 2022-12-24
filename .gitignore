@@ -377,14 +377,12 @@ $RECYCLE.BIN/
 
 # End of https://www.gitignore.io/api/osx,linux,python,windows,pycharm,visualstudiocode
 
-# ignore git bin and lib folder
-src/git/bin
-src/git/lib
+# ignore local zip generate by generate-zip make target
 libraries.zip
 
+# ignore layers
+layers
 
-
-dependencies/python/*
-!dependencies/python/requirements.txt
+# ignore build directoy but allow subdir
 build/*
 !helper/build/*

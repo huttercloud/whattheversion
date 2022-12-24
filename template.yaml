@@ -49,12 +49,20 @@ Resources:
         Route53:
           HostedZoneId: !Ref HostedZoneId
 
+  GitLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+        LayerName: git
+        Description: Contains git binary and libs
+        ContentUri: ./layers/git
+        RetentionPolicy: Retain
+
   FunctionLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
         LayerName: whattheversionlayer
         Description: Dependencies for whattheversion
-        ContentUri: ./dependencies/
+        ContentUri: ./layers/whattheversion
         CompatibleRuntimes:
           - python3.9
         RetentionPolicy: Retain
@@ -69,11 +77,12 @@ Resources:
       Timeout: 300
       Layers:
         - !Ref FunctionLayer
-      # Environment:
-      #   # thanks to: https://github.com/binxio/aws-lambda-git
-      #   Variables:
-      #     LD_LIBRARY_PATH: "${LD_LIBRARY_PATH}:/var/task/lib"
-      #     PATH: "/var/task/bin:${PATH}"
+        - !Ref GitLayer
+      Environment:
+        # thanks to: https://github.com/binxio/aws-lambda-git
+        Variables:
+          LD_LIBRARY_PATH: "/opt/git/lib:$LD_LIBRARY_PATH"
+          PATH: "/opt/git/bin:${PATH}"
       Events:
         WhatTheVersionEvent:
           Type: HttpApi 
