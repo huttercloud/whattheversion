@@ -32,16 +32,16 @@ Resources:
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      # would be really cool to use openapi spec to automatically 
-      # configure all routes
-      # the problem is that the lambda invoke permission isnt created
-      # and i havent found a way how to retrieve the route arn dynamically
-      # from sam/cf to reference it as source arn in "AWS::Lambda::Permission"
-      # DefinitionBody: 
-      #   'Fn::Transform':
-      #     Name: 'AWS::Include'
-      #     Parameters:
-      #       Location: ./openapi-spec.yaml
+     # would be really cool to use openapi spec to automatically
+     # configure all routes
+     # the problem is that the lambda invoke permission isnt created
+     # and i havent found a way how to retrieve the route arn dynamically
+     # from sam/cf to reference it as source arn in "AWS::Lambda::Permission"
+     # DefinitionBody:
+     #   'Fn::Transform':
+     #     Name: 'AWS::Include'
+     #     Parameters:
+     #       Location: ./openapi-spec.yaml
       Domain:
         DomainName: !Ref DomainName
         CertificateArn: !Ref Certificate

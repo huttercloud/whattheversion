@@ -14,8 +14,8 @@ import logging
 import requests
 
 
-import pydantic
-from whattheversion.hallo import return_hallo
+
+
 
 #from utils.versions import VersionsRequest
 
