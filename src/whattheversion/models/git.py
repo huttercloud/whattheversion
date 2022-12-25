@@ -1,7 +1,7 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, AnyHttpUrl
 from typing import Optional
 
 class GitRequest(BaseModel):
-    repository: str
+    repository: AnyHttpUrl
     regexp: Optional[str]
 

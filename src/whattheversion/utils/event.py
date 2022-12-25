@@ -11,7 +11,6 @@ def parse_event_body(event: dict) -> dict:
     :return:
     """
 
-    print(event)
 
     try:
         return json.loads(event.get('body'))

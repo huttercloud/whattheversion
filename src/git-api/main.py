@@ -12,16 +12,16 @@ if os.getenv('AWS_SAM_LOCAL') == 'true':
     os.environ['LD_LIBRARY_PATH'] = ':'.join(['/opt/git/lib', os.environ.get('LD_LIBRARY_PATH')])
 
 
-
-from git.cmd import Git
 from whattheversion.utils import ApiError, respond, parse_git_event
+from whattheversion.git import GitRepository
 
 def handler(event, context):
 
     try:
         git_event = parse_git_event(event)
-        print(git_event)
-        return respond(body=git_event.json())
+        git_repository = GitRepository(origin=git_event.repository, regexp=git_event.regexp)
+
+        return respond(body=git_repository.quick_debug_function())
     except ApiError as ae:
         return respond(
             body=ae.return_error_response(request_id=context.aws_request_id),
@@ -36,4 +36,4 @@ if __name__ == '__main__':
             repository='https://github.com/clinton-hall/nzbToMedia'
         ))
     )
-    handler(event, {})
+    print(handler(event, {}))
