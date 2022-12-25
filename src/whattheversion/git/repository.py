@@ -55,6 +55,9 @@ class GitRepository(object):
         versions = Versions(versions=[])
 
         for t in self.repo.git.tag('-l', '--sort=-creatordate', '--format=%(creatordate:iso-local);%(refname:short)').split('\n'):
+            if not t:
+                continue
+
             ts = t.split(';')
             version = ts[1]
             timestamp = parser.parse(ts[0])
