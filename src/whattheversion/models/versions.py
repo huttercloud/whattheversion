@@ -26,13 +26,12 @@ class Versions(BaseModel):
         sorted_versions = sorted(self.versions, key=lambda v: v.timestamp, reverse=True)
 
         if regexp:
-            print('yarp;')
             p = re.compile(regexp)
             sorted_versions = [ v for v in sorted_versions if p.match(v.version) ]
 
         if len(sorted_versions) == 0:
             raise ApiError(
-                error_message=f'No version found with regular expression {regexp}',
+                error_message=f'No version found.',
                 http_status=404,
             )
 
