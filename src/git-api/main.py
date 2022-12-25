@@ -14,14 +14,24 @@ if os.getenv('AWS_SAM_LOCAL') == 'true':
 
 from whattheversion.utils import ApiError, respond, parse_git_event
 from whattheversion.git import GitRepository
+from whattheversion.models import GitResponse
 
 def handler(event, context):
 
     try:
         git_event = parse_git_event(event)
-        git_repository = GitRepository(origin=git_event.repository, regexp=git_event.regexp)
+        git_repository = GitRepository(origin=git_event.repository)
 
-        return respond(body=git_repository.quick_debug_function())
+        versions = git_repository.get_all_tags()
+        latest_version = versions.get_latest_version(regexp=git_event.regexp)
+
+        response = GitResponse(
+            repository=git_event.repository,
+            version=latest_version.version,
+            timestamp=latest_version.timestamp,
+        )
+
+        return respond(body=response.json())
     except ApiError as ae:
         return respond(
             body=ae.return_error_response(request_id=context.aws_request_id),
@@ -33,7 +43,8 @@ if __name__ == '__main__':
     import json
     event = dict(
         body=json.dumps(dict(
-            repository='https://github.com/clinton-hall/nzbToMedia'
+            repository='https://github.com/clinton-hall/nzbToMedia',
+            regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
         ))
     )
     print(handler(event, {}))
