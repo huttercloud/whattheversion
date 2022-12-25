@@ -1,1 +1,0 @@
-from .hallo import return_hallo
