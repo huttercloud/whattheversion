@@ -46,6 +46,16 @@ class ApiError(Exception):
 
 
 
+class FakeAwsContext(object):
+    """
+        fake the aws context object for local (non sam) executions of the lambdas
+    """
+    aws_request_id: str
+
+    def __init__(self):
+        self.aws_request_id = 'local'
+
+
 
 def respond(body: str, status_code: int = 200, is_base64_encoded: bool = False, headers: Dict[str, str] = None,
             cookies: List[str] = None):

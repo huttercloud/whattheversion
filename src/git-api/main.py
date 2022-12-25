@@ -41,10 +41,11 @@ def handler(event, context):
 
 if __name__ == '__main__':
     import json
+    from whattheversion.utils import FakeAwsContext
     event = dict(
         body=json.dumps(dict(
-            repository='https://github.com/clinton-hall/nzbToMedia',
+            repository='https://github.com/huttercloud/whattheversion',
             regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
         ))
     )
-    print(handler(event, {}))
+    print(handler(event, FakeAwsContext()))
