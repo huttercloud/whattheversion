@@ -204,3 +204,21 @@ Resources:
             Path: /helm
             Method: post
             ApiId: !Ref HttpApi
+
+  DockerVersion:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/docker-api
+      Handler: main.handler
+      Runtime: python3.9
+      Architectures: ['x86_64']
+      Timeout: 300
+      Layers:
+        - !Ref FunctionLayer
+      Events:
+        WhatTheVersionEvent:
+          Type: HttpApi
+          Properties:
+            Path: /docker
+            Method: post
+            ApiId: !Ref HttpApi

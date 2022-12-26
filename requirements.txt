@@ -3,3 +3,5 @@ pydantic
 GitPython
 pyyaml
 requests
+aiohttp
+aiohttp-retry

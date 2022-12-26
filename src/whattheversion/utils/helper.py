@@ -1,6 +1,7 @@
 import json
 from typing import Optional, Dict, List
-
+import aiohttp
+import asyncio
 
 class ApiError(Exception):
     """
@@ -81,3 +82,30 @@ def respond(body: str, status_code: int = 200, is_base64_encoded: bool = False, 
     )
 
     return response
+
+async def aget(url, session):
+    """
+    run an aysnc get request
+    :param url:
+    :param session:
+    :return:
+    """
+    async with session.get(url) as response:
+        return await response.read()
+#
+# def aget(url: str, headers: Dict = {}, r: int = 3):
+#     """
+#      run an aysnc get request
+#     :param url:
+#     :param headers:
+#     :param r:
+#     :return:
+#     """
+#
+#     async with aiohttp.ClientSession(headers=headers) as session:
+#     for i in range(r):
+#         task = asyncio.ensure_future(_aget(url=',session=session))
+#         tasks.append(task)
+#     responses = await asyncio.gather(*tasks)
+#
+#     print(responses)
