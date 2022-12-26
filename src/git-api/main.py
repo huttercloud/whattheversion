@@ -15,15 +15,16 @@ if os.getenv('AWS_SAM_LOCAL') == 'true':
 from whattheversion.utils import ApiError, respond, parse_git_event
 from whattheversion.git import GitRepository
 from whattheversion.models import GitResponse
-
 def handler(event, context):
 
     try:
         git_event = parse_git_event(event)
         git_repository = GitRepository(origin=git_event.repository)
 
-        versions = git_repository.get_all_tags()
-        latest_version = versions.get_latest_version(regexp=git_event.regexp)
+        git_tags = git_repository.get_all_tags()
+
+        tags_to_versions = git_tags.convert_to_versions()
+        latest_version = tags_to_versions.get_latest_version(regexp=git_event.regexp)
 
         response = GitResponse(
             repository=git_event.repository,

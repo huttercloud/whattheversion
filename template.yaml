@@ -90,3 +90,21 @@ Resources:
             Path: /git
             Method: post
             ApiId: !Ref HttpApi
+
+  HelmVersion:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/helm-api
+      Handler: main.handler
+      Runtime: python3.9
+      Architectures: ['x86_64']
+      Timeout: 300
+      Layers:
+        - !Ref FunctionLayer
+      Events:
+        WhatTheVersionEvent:
+          Type: HttpApi
+          Properties:
+            Path: /helm
+            Method: post
+            ApiId: !Ref HttpApi

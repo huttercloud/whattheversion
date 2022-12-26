@@ -1,4 +1,4 @@
-from ..models import GitRequest
+from ..models import GitRequest, HelmRequest
 from ..utils import ApiError
 from pydantic import ValidationError
 import json
@@ -11,7 +11,6 @@ def parse_event_body(event: dict) -> dict:
     :return:
     """
 
-
     try:
         return json.loads(event.get('body'))
     except json.JSONDecodeError as je:
@@ -19,6 +18,7 @@ def parse_event_body(event: dict) -> dict:
             http_status=400,
             error_message=je.msg
         )
+
 
 def parse_git_event(event: dict) -> GitRequest:
     """
@@ -37,3 +37,20 @@ def parse_git_event(event: dict) -> GitRequest:
             error_message=ve.json()
         )
 
+
+def parse_helm_event(event: dict) -> HelmRequest:
+    """
+    parse the given event and return a helm request
+    :param event:
+    :return:
+    """
+
+    body = parse_event_body(event)
+
+    try:
+        return HelmRequest(**body)
+    except ValidationError as ve:
+        raise ApiError(
+            http_status=400,
+            error_message=ve.json()
+        )

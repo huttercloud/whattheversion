@@ -1,10 +1,8 @@
 import tempfile
-from typing import Optional
-from git.cmd import Git
 from git import Repo
 from git.exc import GitCommandError
 from ..utils import ApiError
-from ..models import Versions, Version
+from ..models import GitTag, GitTags
 from dateutil import parser
 class GitRepository(object):
     origin: str
@@ -46,25 +44,26 @@ class GitRepository(object):
                 error_message=gce.stderr
             )
 
-    def get_all_tags(self) -> Versions:
+    def get_all_tags(self) -> GitTags:
         """
         returns all tags with timestamps
         :return:
         """
 
-        versions = Versions(versions=[])
+        t = GitTags(tags=[])
 
-        for t in self.repo.git.tag('-l', '--sort=-creatordate', '--format=%(creatordate:iso-local);%(refname:short)').split('\n'):
-            if not t:
+        for tag in self.repo.git.tag('-l', '--sort=-creatordate', '--format=%(creatordate:iso-local);%(refname:short)').split('\n'):
+            if not tag:
                 continue
 
-            ts = t.split(';')
+            ts = tag.split(';')
             version = ts[1]
             timestamp = parser.parse(ts[0])
 
-            versions.versions.append(Version(version=version, timestamp=timestamp))
+            t.tags.append(GitTag(tag=version, timestamp=timestamp))
 
-        return versions
+
+        return t
 
     def quick_debug_function(self):
         return
