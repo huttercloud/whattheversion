@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 import re
 from ..utils import ApiError
 
+
 class Version(BaseModel):
     version: str
     timestamp: datetime
