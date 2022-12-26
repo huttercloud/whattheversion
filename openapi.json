@@ -1,0 +1,261 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "whattheversion",
+    "description": "Retrieve the latest version for git tepo (git tag), a docker image (docker tag) or a helm chart (manifest version)"
+  },
+  "servers": [
+    {
+      "url": "https://whattheversion.hutter.cloud/api",
+      "description": "Public Api Endpoint"
+    },
+    {
+      "url": "http://127.0.0.1:3000/",
+      "description": "Development Server"
+    }
+  ],
+  "paths": {
+    "/git": {
+      "post": {
+        "summary": "Retrieve the latest tag of the given git repository",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GitRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Versions found and returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GitResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Version not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/helm": {
+      "post": {
+        "summary": "Retrieve the latest version of the given helm chart",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HelmRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Versions found and returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HelmResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Version not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RegExp": {
+        "description": "A python regexp string to filter version tags",
+        "type": "string"
+      },
+      "Url": {
+        "description": "The repository url (as https url)",
+        "type": "string"
+      },
+      "Version": {
+        "description": "Version Identifier",
+        "type": "string"
+      },
+      "Timestamp": {
+        "description": "The date and time the version was created (UTC)",
+        "type": "string",
+        "format": "date-time"
+      },
+      "Chart": {
+        "description": "Name of the helm chart",
+        "type": "string"
+      },
+      "GitRequest": {
+        "type": "object",
+        "required": [
+          "repository"
+        ],
+        "properties": {
+          "repository": {
+            "$ref": "#/components/schemas/Url",
+            "example": "https://github.com/huttercloud/whattheversion"
+          },
+          "regexp": {
+            "$ref": "#/components/schemas/RegExp",
+            "example": "^[0-9]+\\\\.?[0-9]+\\\\.?[0-9]+$"
+          }
+        }
+      },
+      "GitResponse": {
+        "type": "object",
+        "required": [
+          "repository",
+          "version",
+          "timestamp"
+        ],
+        "properties": {
+          "repository": {
+            "$ref": "#/components/schemas/Url"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        }
+      },
+      "HelmRequest": {
+        "type": "object",
+        "required": [
+          "registry",
+          "chart"
+        ],
+        "properties": {
+          "registry": {
+            "$ref": "#/components/schemas/Url"
+          },
+          "regexp": {
+            "$ref": "#/components/schemas/RegExp"
+          },
+          "chart": {
+            "$ref": "#/components/schemas/Chart"
+          }
+        }
+      },
+      "HelmResponse": {
+        "type": "object",
+        "required": [
+          "registry",
+          "version",
+          "timestamp",
+          "chart"
+        ],
+        "properties": {
+          "registry": {
+            "$ref": "#/components/schemas/Url"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "chart": {
+            "$ref": "#/components/schemas/Chart"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "errorMessage",
+          "errorType",
+          "requestId"
+        ],
+        "properties": {
+          "errorMessage": {
+            "description": "A human readable error message",
+            "type": "string"
+          },
+          "errorType": {
+            "type": "string"
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "stackTrace": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
