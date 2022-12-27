@@ -8,6 +8,8 @@ from ..utils import ApiError
 class Version(BaseModel):
     version: str
     timestamp: datetime
+    digest: Optional[str]
+    appVersion: Optional[str]
 
     @validator('timestamp')
     def convert_timestamp_to_utc(cls, v):
@@ -15,6 +17,17 @@ class Version(BaseModel):
 
 class Versions(BaseModel):
     versions: List[Version]
+
+
+    def get_versions_sorted_by_timestamp(self) -> List[Version]:
+        """
+        returns the versions sorted by timestamp
+
+        :return:
+        """
+
+        return sorted(self.versions, key=lambda v: v.timestamp, reverse=True)
+
 
     def get_latest_version(self, regexp: Optional[str] = None) -> Version:
         """

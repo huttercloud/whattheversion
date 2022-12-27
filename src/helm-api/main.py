@@ -5,10 +5,11 @@
 """
 
 
-from whattheversion.utils import ApiError, respond, parse_helm_event
+from whattheversion.utils import ApiError, respond, parse_helm_event, setup_logging
 from whattheversion.helm import HelmRegistry
 from whattheversion.models import HelmResponse
 
+setup_logging()
 def handler(event, context):
 
     try:

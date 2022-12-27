@@ -1,24 +1,43 @@
 import tempfile
 from git import Repo
+from git.cmd import Git
 from git.exc import GitCommandError
 from ..utils import ApiError
 from ..models import GitTag, GitTags
 from dateutil import parser
+from typing import List
+from ..dynamodb import DynamoDbClient
+
 class GitRepository(object):
     origin: str
     directory: str
-    repository: Repo
+    repo: Repo
 
     def __init__(self, origin: str):
         self.origin = origin
 
-        # initialize a temp directory for the shallow git clone
-        self.directory = tempfile.mkdtemp()
+    def get_remote_tags(self) -> List[str]:
+        """
+        returns a list of tags found with ls-remote
+        the list is used to check the dynamodb entry for the git repository
+        for missing tags
+        :return:
+        """
 
-        # initialize the git repository and create a partial clone
-        self._git_fetch()
+        g = Git()
+        tags = list()
+        try:
+            for r in g.ls_remote('--tags', self.origin).split('\n'):
+                ti = r.find('refs/tags/') + len('refs/tags/')
+                tags.append(r[ti:])
+        except GitCommandError as gce:
+            raise ApiError(
+                http_status=400,
+                error_message=gce.stderr
+            )
 
-    def _git_fetch(self):
+        return tags
+    def git_clone(self):
         """
         create a partial clone of the given git repository
         thanks to: https://stackoverflow.com/questions/65729722/git-ls-remote-tags-how-to-get-date-information
@@ -34,6 +53,7 @@ class GitRepository(object):
         """
 
         try:
+            self.directory = tempfile.mkdtemp()
             self.repo = Repo.init(path=self.directory, mkdir=False)
             self.repo.create_remote(name='origin', url=self.origin)
             self.repo.git.config('extensions.partialClone', 'true')
@@ -61,7 +81,6 @@ class GitRepository(object):
             timestamp = parser.parse(ts[0])
 
             t.tags.append(GitTag(tag=version, timestamp=timestamp))
-
 
         return t
 

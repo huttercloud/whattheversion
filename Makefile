@@ -1,13 +1,13 @@
 #
 # thanks to: https://github.com/binxio/aws-lambda-git
 #
-.PHONY: deploy dev build start-api dependencies generate-git-zip layers layer-git layer-python sam-deploy swagger-ui
+.PHONY: deploy dev build start-api dependencies generate-git-zip dynamodb layers layer-git layer-python sam-deploy swagger-ui
 
 
 
 deploy: build sam-deploy swagger-ui
 
-dev: build start-api
+dev: build dynamodb start-api
 
 
 # publish
@@ -23,12 +23,25 @@ swagger-ui:
 build: layers
 	sam build --use-container 
 
+#
+# local dev
+#
+dynamodb:
+	-docker-compose up -d
+	-AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local \
+	    aws dynamodb --region eu-central-1 create-table \
+		--table-name whattheversion \
+		--attribute-definitions AttributeName=PK,AttributeType=S \
+		--key-schema AttributeName=PK,KeyType=HASH \
+		--billing-mode PAY_PER_REQUEST \
+		--endpoint-url http://localhost:8000
+
 start-api:
-	sam local start-api --warm-containers EAGER
-# install dependencies and copyh layer code
+	LOGLEVEL=DEBUG sam local start-api --warm-containers EAGER --env-vars $(PWD)/helper/dev/env-vars.json
 
-# create layer for git binary, the binary will be available in /opt/git/bin, the libs in /opt/git/lib.
-
+#
+# layers
+#
 layers: layer-git layer-python
 
 layer-git:

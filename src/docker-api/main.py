@@ -5,9 +5,11 @@
 """
 
 
-from whattheversion.utils import ApiError, respond, parse_docker_event
+from whattheversion.utils import ApiError, respond, parse_docker_event, setup_logging
 from whattheversion.docker import create_docker_registry
 from whattheversion.models import DockerResponse
+
+setup_logging()
 def handler(event, context):
 
     try:

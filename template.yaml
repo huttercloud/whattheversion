@@ -25,7 +25,12 @@ Parameters:
   AcmCertificateArn:
     Type: String
     Default: "arn:aws:acm:us-east-1:337261303015:certificate/66380bfb-6ebd-4671-bc1c-3da39eddb73b"
-
+  DynamoDBTableName:
+    Type: String
+    Default: "whattheversion"
+  LambdaLogLevel:
+    Type: String
+    Default: "WARNING"
 Resources:
   ##
   # cloudfront distribution
@@ -128,6 +133,22 @@ Resources:
         HostedZoneId: "Z2FDTNDATAQYW2" # CloudFront
 
   ##
+  # dynamodb
+  ##
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DynamoDBTableName
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  ##
   # api gateway
   ##
   HttpApi:
@@ -137,13 +158,17 @@ Resources:
      # would be really cool to use openapi spec to automatically
      # configure all routes
      # the problem is that the lambda invoke permission isnt created
-     # and i havent found a way how to retrieve the route arn dynamically
+     # and I haven't found a way how to retrieve the route arn dynamically
      # from sam/cf to reference it as source arn in "AWS::Lambda::Permission"
      # DefinitionBody:
      #   'Fn::Transform':
      #     Name: 'AWS::Include'
      #     Parameters:
      #       Location: ./openapi-spec.yaml
+
+  ##
+  # lambda functions
+  ##
 
   GitLayer:
     Type: AWS::Serverless::LayerVersion
@@ -179,6 +204,11 @@ Resources:
         Variables:
           LD_LIBRARY_PATH: "/opt/git/lib:$LD_LIBRARY_PATH"
           PATH: "/opt/git/bin:$PATH"
+          LOGLEVEL: !Ref LambdaLogLevel
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              !Ref DynamoDBTable
       Events:
         WhatTheVersionEvent:
           Type: HttpApi 
@@ -197,6 +227,13 @@ Resources:
       Timeout: 300
       Layers:
         - !Ref FunctionLayer
+      Environment:
+        Variables:
+          LOGLEVEL: !Ref LambdaLogLevel
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              !Ref DynamoDBTable
       Events:
         WhatTheVersionEvent:
           Type: HttpApi
@@ -215,6 +252,13 @@ Resources:
       Timeout: 300
       Layers:
         - !Ref FunctionLayer
+      Environment:
+        Variables:
+          LOGLEVEL: !Ref LambdaLogLevel
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              !Ref DynamoDBTable
       Events:
         WhatTheVersionEvent:
           Type: HttpApi
