@@ -99,7 +99,7 @@ class DynamoDbClient(object):
             item = {
                 **dict(
                     PK=pk,
-                    versions=self._convert_versions_to_item_dict(versions=versions.get_versions_sorted_by_timestamp())[0:10]
+                    versions=self._convert_versions_to_item_dict(versions=versions.get_versions_sorted_by_timestamp())
                 ),
                 **payload
             }
@@ -212,6 +212,42 @@ class DynamoDbClient(object):
         return h
 
     def upsert_helm_entry(self, registry: str, chart: HelmChart):
+        """
+        create or update the given git entry
+        :param tags:
+        :param origin:
+        :return:
+        """
+
+        self._upsert_entry(
+            pk=self._get_helm_pk(registry=registry, chart_name=chart.name),
+            versions=chart.convert_to_versions()
+        )
+
+    def _get_docker_pk(self, registry: str, chart_name: str) -> str:
+        """
+        returns the primary key for a helm entry
+        :param origin:
+        :return:
+        """
+
+        up = urlparse(registry)
+        registry_host = up.netloc
+
+        return f'HELM#{registry_host}#{chart_name}'
+
+    def get_docker_entry(self, registry: str, chart: HelmChart) -> DynamoDbEntry:
+        """
+        retrieves the dynamodb entry for the helm repo/chart
+        :param origin:
+        :return:
+        """
+
+        h = self._get_entry(pk=self._get_helm_pk(registry=registry, chart_name=chart.name))
+
+        return h
+
+    def upsert_docker_entry(self, registry: str, chart: HelmChart):
         """
         create or update the given git entry
         :param tags:
