@@ -25,6 +25,9 @@ Parameters:
   AcmCertificateArn:
     Type: String
     Default: "arn:aws:acm:us-east-1:337261303015:certificate/66380bfb-6ebd-4671-bc1c-3da39eddb73b"
+  DomainNameApi:
+    Type: String
+    Default: whattheversion-api.hutter.cloud
   DynamoDBTableName:
     Type: String
     Default: "whattheversion"
@@ -78,11 +81,12 @@ Resources:
             Id: bucketOrigin
             S3OriginConfig:
               OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${OriginAccessIdentity}
-          - DomainName: !Join [ '', !Split [ 'https://', !GetAtt HttpApi.ApiEndpoint ] ]
-            Id: apiOrigin
-            CustomOriginConfig:
-              HTTPSPort: 443
-              OriginProtocolPolicy: "https-only"
+# moved back to direct api calls due top max 60 second timeout
+#          - DomainName: !Join [ '', !Split [ 'https://', !GetAtt HttpApi.ApiEndpoint ] ]
+#            Id: apiOrigin
+#            CustomOriginConfig:
+#              HTTPSPort: 443
+#              OriginProtocolPolicy: "https-only"
         DefaultCacheBehavior:
           Compress: 'true'
           AllowedMethods:
@@ -95,26 +99,27 @@ Resources:
             Cookies:
               Forward: none
           ViewerProtocolPolicy: redirect-to-https
-        CacheBehaviors:
-          - Compress: 'true'
-            AllowedMethods:
-              - HEAD
-              - DELETE
-              - POST
-              - GET
-              - OPTIONS
-              - PUT
-              - PATCH
-            ForwardedValues:
-              QueryString: 'false'
-              Cookies:
-                Forward: none
-            TargetOriginId: apiOrigin
-            DefaultTTL: 0
-            MaxTTL: 0
-            MinTTL: 0
-            PathPattern: '/api/*'
-            ViewerProtocolPolicy: redirect-to-https
+# moved back to direct api calls due top max 60 second timeout
+#        CacheBehaviors:
+#          - Compress: 'true'
+#            AllowedMethods:
+#              - HEAD
+#              - DELETE
+#              - POST
+#              - GET
+#              - OPTIONS
+#              - PUT
+#              - PATCH
+#            ForwardedValues:
+#              QueryString: 'false'
+#              Cookies:
+#                Forward: none
+#            TargetOriginId: apiOrigin
+#            DefaultTTL: 0
+#            MaxTTL: 0
+#            MinTTL: 0
+#            PathPattern: '/api/*'
+#            ViewerProtocolPolicy: redirect-to-https
         PriceClass: 'PriceClass_100'
         Aliases:
           - !Ref DomainName
@@ -151,10 +156,21 @@ Resources:
   ##
   # api gateway
   ##
+
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainNameApi
+      DomainValidationOptions:
+        - DomainName: !Ref DomainNameApi
+          HostedZoneId: !Ref HostedZoneId
+      ValidationMethod: DNS
+
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      StageName: api # stage name is required to allow routing from cloudfront /api/*
+# moved back to direct api calls due top max 60 second timeout
+#      StageName: api
      # would be really cool to use openapi spec to automatically
      # configure all routes
      # the problem is that the lambda invoke permission isnt created
@@ -165,6 +181,12 @@ Resources:
      #     Name: 'AWS::Include'
      #     Parameters:
      #       Location: ./openapi-spec.yaml
+      Domain:
+        DomainName: !Ref DomainNameApi
+        CertificateArn: !Ref Certificate
+        EndpointConfiguration: REGIONAL
+        Route53:
+          HostedZoneId: !Ref HostedZoneId
 
   ##
   # lambda functions
