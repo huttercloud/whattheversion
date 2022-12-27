@@ -6,7 +6,7 @@ import logging
 import socket
 from urllib.parse import urlparse
 from boto3.dynamodb.conditions import Key, Attr
-from ..models import GitTags, Versions, Version, DynamoDbEntry, HelmChart
+from ..models import GitTags, Versions, Version, DynamoDbEntry, HelmChart, DockerImageTags
 
 
 class DynamoDbClient(object):
@@ -224,38 +224,34 @@ class DynamoDbClient(object):
             versions=chart.convert_to_versions()
         )
 
-    def _get_docker_pk(self, registry: str, chart_name: str) -> str:
+    def _get_docker_pk(self, registry: str, repository: str) -> str:
         """
-        returns the primary key for a helm entry
+        returns the primary key for a docker entry
         :param origin:
         :return:
         """
 
-        up = urlparse(registry)
-        registry_host = up.netloc
+        return f'DOCKER#{registry}#{repository}'
 
-        return f'HELM#{registry_host}#{chart_name}'
-
-    def get_docker_entry(self, registry: str, chart: HelmChart) -> DynamoDbEntry:
+    def get_docker_entry(self, registry: str, repository: str) -> DynamoDbEntry:
         """
         retrieves the dynamodb entry for the helm repo/chart
         :param origin:
         :return:
         """
 
-        h = self._get_entry(pk=self._get_helm_pk(registry=registry, chart_name=chart.name))
+        d = self._get_entry(pk=self._get_docker_pk(registry=registry, repository=repository))
 
-        return h
+        return d
 
-    def upsert_docker_entry(self, registry: str, chart: HelmChart):
+    def upsert_docker_entry(self, registry: str, repository: str, tags: DockerImageTags):
         """
         create or update the given git entry
         :param tags:
-        :param origin:
         :return:
         """
 
         self._upsert_entry(
-            pk=self._get_helm_pk(registry=registry, chart_name=chart.name),
-            versions=chart.convert_to_versions()
+            pk=self._get_docker_pk(registry=registry, repository=repository),
+            versions=tags.convert_to_versions()
         )
