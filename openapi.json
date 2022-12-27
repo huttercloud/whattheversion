@@ -40,35 +40,38 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
+          "default": {
+            "$ref": "#/components/responses/default"
+          }
+        }
+      }
+    },
+    "/docker": {
+      "post": {
+        "summary": "Retrieve the latest docker image tag",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DockerRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Versions found and returned",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/DockerResponse"
                 }
               }
             }
           },
-          "404": {
-            "description": "Version not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
+          "default": {
+            "$ref": "#/components/responses/default"
           }
         }
       }
@@ -97,48 +100,33 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Version not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
+          "default": {
+            "$ref": "#/components/responses/default"
           }
         }
       }
     }
   },
   "components": {
+    "responses": {
+      "default": {
+        "description": "Unexpected error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            }
+          }
+        }
+      }
+    },
     "schemas": {
       "RegExp": {
         "description": "A python regexp string to filter version tags",
         "type": "string"
       },
       "Url": {
-        "description": "The repository url (as https url)",
+        "description": "An url for registry and repository",
         "type": "string"
       },
       "Version": {
@@ -153,6 +141,15 @@
       "Chart": {
         "description": "Name of the helm chart",
         "type": "string"
+      },
+      "DockerImage": {
+        "description": "The name of the docker image",
+        "type": "string"
+      },
+      "DockerRegistry": {
+        "description": "The docker registry",
+        "type": "string",
+        "default": "registry.hub.docker.com"
       },
       "GitRequest": {
         "type": "object",
@@ -227,6 +224,47 @@
           },
           "chart": {
             "$ref": "#/components/schemas/Chart"
+          }
+        }
+      },
+      "DockerRequest": {
+        "type": "object",
+        "required": [
+          "registry",
+          "image"
+        ],
+        "properties": {
+          "registry": {
+            "$ref": "#/components/schemas/DockerRegistry"
+          },
+          "regexp": {
+            "$ref": "#/components/schemas/RegExp"
+          },
+          "image": {
+            "$ref": "#/components/schemas/DockerImage"
+          }
+        }
+      },
+      "DockerResponse": {
+        "type": "object",
+        "required": [
+          "registry",
+          "image",
+          "version",
+          "timestamp"
+        ],
+        "properties": {
+          "registry": {
+            "$ref": "#/components/schemas/DockerRegistry"
+          },
+          "version": {
+            "$ref": "#/components/schemas/Version"
+          },
+          "timestamp": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "image": {
+            "$ref": "#/components/schemas/DockerImage"
           }
         }
       },
