@@ -8,24 +8,30 @@
 from whattheversion.utils import ApiError, respond, parse_helm_event, setup_logging
 from whattheversion.helm import HelmRegistry
 from whattheversion.models import HelmResponse
+from whattheversion.dynamodb import DynamoDbClient
 
 setup_logging()
 def handler(event, context):
 
     try:
+        db = DynamoDbClient()
         helm_event = parse_helm_event(event)
         helm_registry = HelmRegistry(registry=helm_event.registry)
         helm_chart = helm_registry.get_helm_chart(name=helm_event.chart)
+        dynamodb_entry = db.get_helm_entry(registry=helm_registry.registry, chart=helm_chart)
 
-        chart_to_versions = helm_chart.convert_to_versions()
-        latest_version = chart_to_versions.get_latest_version(regexp=helm_event.regexp)
+        if not dynamodb_entry or len(dynamodb_entry.versions.versions) != len(helm_chart.entries):
+            db.upsert_helm_entry(registry=helm_registry.registry, chart=helm_chart)
+            dynamodb_entry = db.get_helm_entry(registry=helm_registry.registry, chart=helm_chart)
 
+        latest_version = dynamodb_entry.versions.get_latest_version(regexp=helm_event.regexp)
 
         response = HelmResponse(
             registry=helm_registry.registry,
             chart=helm_chart.name,
             version=latest_version.version,
             timestamp=latest_version.timestamp,
+            appVersion=latest_version.appVersion,
         )
 
         return respond(body=response.json())

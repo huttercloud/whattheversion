@@ -1,17 +1,17 @@
 import boto3
-from typing import Any, Dict
+from typing import Any, Dict, List
 from botocore.exceptions import ClientError
 from ..utils import ApiError, is_local_dev
 import logging
 import socket
 from urllib.parse import urlparse
 from boto3.dynamodb.conditions import Key, Attr
-from ..models import GitTags, Versions, DynamoDbEntry
+from ..models import GitTags, Versions, Version, DynamoDbEntry, HelmChart
+
 
 class DynamoDbClient(object):
-
     table_name: str
-    table: Any # dynamodb.Table
+    table: Any  # dynamodb.Table
 
     def __init__(self, table_name: str = 'whattheversion'):
         self.table_name = table_name
@@ -38,6 +38,20 @@ class DynamoDbClient(object):
                 error_message=ce.response['Error']['Message']
             )
 
+    def _convert_versions_to_item_dict(self, versions: List[Version]) -> List[Dict[str, str]]:
+        """
+        convert the versions model to a usable dict for dynamodb insert/update
+        :param versions:
+        :return:
+        """
+
+        versions_to_upsert = []
+        for version in versions:
+            v = version.dict(exclude_unset=True, exclude_none=True)
+            v['timestamp'] = v['timestamp'].isoformat()
+            versions_to_upsert.append(v)
+
+        return versions_to_upsert
 
     def _get_entry(self, pk: str) -> DynamoDbEntry:
         """
@@ -82,9 +96,10 @@ class DynamoDbClient(object):
 
         # create entry if it doesnt exist
         try:
-            item={**dict(
+            item = {
+                **dict(
                     PK=pk,
-                    versions=[dict(version=v.version, timestamp=v.timestamp.isoformat()) for v in versions.get_versions_sorted_by_timestamp()]
+                    versions=self._convert_versions_to_item_dict(versions=versions.get_versions_sorted_by_timestamp())[0:10]
                 ),
                 **payload
             }
@@ -107,7 +122,9 @@ class DynamoDbClient(object):
         # only insert the missing dicts into the versions field
         # but good enough for now...
         current_entry = self._get_entry(pk=pk)
-        versions_missing = [v for v in current_entry.versions.get_versions_sorted_by_timestamp() + versions.get_versions_sorted_by_timestamp() if v not in current_entry.versions.get_versions_sorted_by_timestamp()]
+        versions_missing = [v for v in
+                            current_entry.versions.get_versions_sorted_by_timestamp() + versions.get_versions_sorted_by_timestamp()
+                            if v not in current_entry.versions.get_versions_sorted_by_timestamp()]
 
         if versions_missing:
             # update loop for versions
@@ -121,7 +138,7 @@ class DynamoDbClient(object):
                         '#v': 'versions',
                     },
                     ExpressionAttributeValues={
-                        ':versions': [dict(version=v.version, timestamp=v.timestamp.isoformat()) for v in versions_missing]
+                        ':versions': self._convert_versions_to_item_dict(versions=versions_missing)
                     },
                     ConditionExpression=Attr('PK').exists()
 
@@ -132,9 +149,6 @@ class DynamoDbClient(object):
                     http_status=500,
                     error_message=ce.response['Error']['Message']
                 )
-
-
-
 
     def _get_git_pk(self, origin: str) -> str:
         """
@@ -150,7 +164,6 @@ class DynamoDbClient(object):
 
         return f'GIT#{git_host}#{git_repo}'
 
-
     def get_git_entry(self, origin: str) -> DynamoDbEntry:
         """
         retrieves the dynamodb entry for the git repo
@@ -162,8 +175,7 @@ class DynamoDbClient(object):
 
         return g
 
-
-    def upsert_git_entry(self, origin, tags = GitTags):
+    def upsert_git_entry(self, origin, tags: GitTags):
         """
         create or update the given git entry
         :param tags:
@@ -176,3 +188,38 @@ class DynamoDbClient(object):
             versions=tags.convert_to_versions()
         )
 
+    def _get_helm_pk(self, registry: str, chart_name: str) -> str:
+        """
+        returns the primary key for a helm entry
+        :param origin:
+        :return:
+        """
+
+        up = urlparse(registry)
+        registry_host = up.netloc
+
+        return f'HELM#{registry_host}#{chart_name}'
+
+    def get_helm_entry(self, registry: str, chart: HelmChart) -> DynamoDbEntry:
+        """
+        retrieves the dynamodb entry for the helm repo/chart
+        :param origin:
+        :return:
+        """
+
+        h = self._get_entry(pk=self._get_helm_pk(registry=registry, chart_name=chart.name))
+
+        return h
+
+    def upsert_helm_entry(self, registry: str, chart: HelmChart):
+        """
+        create or update the given git entry
+        :param tags:
+        :param origin:
+        :return:
+        """
+
+        self._upsert_entry(
+            pk=self._get_helm_pk(registry=registry, chart_name=chart.name),
+            versions=chart.convert_to_versions()
+        )
