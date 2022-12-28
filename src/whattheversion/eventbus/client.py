@@ -49,3 +49,24 @@ class EventBusClient(object):
                 event
             ]
         )
+
+    def put_docker_event(self, registry: str, repository: str):
+        """
+        creates a custom docker event in eventbridge
+        :param registry:
+        :param repository
+        :return:
+        """
+
+        event = UpsertDynamoDBEvent().dict()
+
+        event['Detail'] = UpsertDockerEventDetail(
+            registry=registry,
+            repository=repository
+        ).json()
+
+        self.client.put_events(
+            Entries=[
+                event
+            ]
+        )

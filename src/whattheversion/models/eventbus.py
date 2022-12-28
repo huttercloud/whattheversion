@@ -15,7 +15,7 @@ class UpsertGitEventDetail(BaseModel):
 class UpsertDockerEventDetail(BaseModel):
     source: str = 'docker'
     registry: str
-    image: str
+    repository: str
 
 class UpsertHelmEventDetail(BaseModel):
     source: str = 'helm'

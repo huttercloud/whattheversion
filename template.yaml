@@ -366,3 +366,36 @@ Resources:
               detail:
                 source:
                   - "helm"
+                  
+  DockerEvent:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/docker-event
+      Handler: main.handler
+      Runtime: python3.9
+      Architectures: ['x86_64']
+      Timeout: 300
+      Layers:
+        - !Ref FunctionLayer
+        - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
+      Environment:
+        Variables:
+          LOGLEVEL: !Ref LambdaLogLevel
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              !Ref DynamoDBTable
+      Tracing: Active
+      Events:
+        WhatTheVersionEvent:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source:
+                - "cloud.hutter.whattheversion"
+              detail-type:
+                - "Create or Update DynamoDB versions entry"
+              detail:
+                source:
+                  - "docker"

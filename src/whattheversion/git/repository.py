@@ -16,6 +16,9 @@ class GitRepository(object):
     def __init__(self, origin: str):
         self.origin = origin
 
+    # get_remote_tags isnt used anymore as the updating of dynamodb is now outsourced to
+    # dedicated lambdas which can run for 15 minutes and are only triggered on a schedule,
+    # so no need to verify the available tags before doing a more "expensive" git clone.
     def get_remote_tags(self) -> List[str]:
         """
         returns a list of tags found with ls-remote

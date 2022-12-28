@@ -5,14 +5,14 @@ from .versions import Versions, Version
 
 class DockerRequest(BaseModel):
     registry: str = 'registry.hub.docker.com'
-    image: str
+    repository: str
     regexp: Optional[str]
 
 class DockerResponse(BaseModel):
     registry: str
     version: str
     timestamp: datetime
-    image: str
+    repository: str
 
 
 class DockerImageTag(BaseModel):

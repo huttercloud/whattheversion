@@ -73,7 +73,7 @@ def parse_helm_eventbridge_event(event: dict) -> HelmRequest:
 
     return HelmRequest(**event.get('detail'))
 
-def parse_docker_event(event: dict) -> DockerRequest:
+def parse_docker_api_event(event: dict) -> DockerRequest:
     """
     parse the given event and return a docker request
     :param event:
@@ -89,3 +89,12 @@ def parse_docker_event(event: dict) -> DockerRequest:
             http_status=400,
             error_message=ve.json()
         )
+
+def parse_docker_eventbridge_event(event: dict) -> DockerRequest:
+    """
+    parse the given eventbridge docker event and give back a docker request
+    :param event:
+    :return:
+    """
+
+    return DockerRequest(**event.get('detail'))

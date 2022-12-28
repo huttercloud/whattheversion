@@ -19,57 +19,57 @@ VERSIONS=dict(
     docker=[
         dict(
             registry='k8s.gcr.io',
-            image='external-dns/external-dns',
+            repository='external-dns/external-dns',
             regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
         ),
         dict(
             registry='registry.hub.docker.com',
-            image='pihole/pihole',
+            repository='pihole/pihole',
             regexp='^[0-9]{4}\.[0-9]{1,2}\.[0-9]{1,2}$',
         ),
         dict(
             registry='registry.hub.docker.com',
-            image='linuxserver/wireguard',
+            repository='linuxserver/wireguard',
             regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$',
         ),
         dict(
             registry='registry.hub.docker.com',
-            image='linuxserver/unifi-controller',
+            repository='linuxserver/unifi-controller',
             regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$',
         ),
         dict(
             registry='registry.hub.docker.com',
-            image='linuxserver/bazarr',
+            repository='linuxserver/bazarr',
             regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$',
         ),
         dict(
             registry='registry.hub.docker.com',
-            image='linuxserver/nzbhydra2',
+            repository='linuxserver/nzbhydra2',
             regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$',
         ),
         dict(
             registry='registry.hub.docker.com',
-            image='linuxserver/radarr',
+            repository='linuxserver/radarr',
             regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$',
         ),
         dict(
             registry='registry.hub.docker.com',
-            image='linuxserver/sabnzbd',
+            repository='linuxserver/sabnzbd',
             regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$',
         ),
         dict(
             registry='registry.hub.docker.com',
-            image='linuxserver/sonarr',
+            repository='linuxserver/sonarr',
             regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$',
         ),
         dict(
             registry='quay.io',
-            image='oauth2-proxy/oauth2-proxy',
+            repository='oauth2-proxy/oauth2-proxy',
             regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
         ),
         dict(
             registry='registry.hub.docker.com',
-            image='filebrowser/filebrowser',
+            repository='filebrowser/filebrowser',
             regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
         ),
     ],
