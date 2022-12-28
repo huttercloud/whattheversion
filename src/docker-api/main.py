@@ -24,7 +24,7 @@ def handler(event, context):
         dynamodb_entry = db.get_docker_entry(registry=docker_event.registry,
                                              repository=docker_event.repository)
         if not dynamodb_entry or not  dynamodb_entry.versions.versions:
-            eventbus.put_docker_event(registry=docker_event.repository, repository=docker_event.repository)
+            eventbus.put_docker_event(registry=docker_event.registry, repository=docker_event.repository)
             raise ApiError(
                 http_status=404,
                 error_message=f'No versions found for docker registry "{docker_event.registry}" and repository "{docker_event.repository}". Sent event to collect '
@@ -56,10 +56,10 @@ if __name__ == '__main__':
     event = dict(
         body=json.dumps(dict(
             # # dockerhub examples
-            repository='linuxserver/sabnzbd',
-            regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
-            # repository='filebrowser/filebrowser',
-            # regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
+            # repository='linuxserver/sabnzbd',
+            # regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
+            repository='filebrowser/filebrowser',
+            regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
 
             # k8s.gcr.io example
             # registry='k8s.gcr.io',

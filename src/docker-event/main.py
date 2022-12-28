@@ -51,7 +51,7 @@ def handler(event, context):
     db = DynamoDbClient()
     docker_event = parse_docker_eventbridge_event(event)
     docker_registry = create_docker_registry(registry=docker_event.registry)
-    docker_repository = docker_registry.get_repository(image=docker_event.repository)
+    docker_repository = docker_registry.get_repository(repository=docker_event.repository)
     repository_tags = docker_repository.get_repository_tags()
 
     # depending on the repository type the tags are collected
@@ -96,9 +96,9 @@ if __name__ == '__main__':
     event = dict(
         detail=dict(
             # # dockerhub examples
-            repository='linuxserver/sabnzbd',
-            regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
-            # repository='filebrowser/filebrowser',
+            # repository='linuxserver/sabnzbd',
+            # regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
+            repository='filebrowser/filebrowser',
             # regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
 
             # k8s.gcr.io example

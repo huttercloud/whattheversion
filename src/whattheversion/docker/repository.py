@@ -77,7 +77,7 @@ class DockerRepositoryV2(object):
     def get_digests_for_tags(self, tag_list: DockerImageTags) -> DockerImageTags:
         """
         retrieve the digest from the specified tags
-        :param tags:
+        :param tag_list:
         :return:
         """
         docker_image_tags_with_digest = DockerImageTags(tags=[])
