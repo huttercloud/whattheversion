@@ -46,11 +46,9 @@ def handler(event, context):
         db.upsert_git_entry(origin=git_repository.origin, tags=git_local_tags)
 
 if __name__ == '__main__':
-    import json
-
     event = dict(
         detail=dict(
             repository='https://github.com/clinton-hall/nzbToMedia',
         )
     )
-    print(handler(event, {}))
+    handler(event, {})

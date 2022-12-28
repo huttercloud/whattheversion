@@ -5,47 +5,37 @@
 """
 
 
-import logging
-from whattheversion.utils import setup_logging
-
-setup_logging()
-
-from whattheversion.utils import ApiError, respond, parse_helm_event
-from whattheversion.helm import HelmRegistry
-from whattheversion.models import HelmResponse, compare_versions
+from whattheversion.utils import ApiError, respond, parse_helm_api_event, setup_logging
+from whattheversion.models import HelmResponse
 from whattheversion.dynamodb import DynamoDbClient
+from whattheversion.eventbus import EventBusClient
 
 
 def handler(event, context):
 
     try:
+        setup_logging()
+        eventbus = EventBusClient()
         db = DynamoDbClient()
-        helm_event = parse_helm_event(event)
-        helm_registry = HelmRegistry(registry=helm_event.registry)
-        helm_chart = helm_registry.get_helm_chart(name=helm_event.chart)
-        dynamodb_entry = db.get_helm_entry(registry=helm_registry.registry, chart=helm_chart)
+        helm_event = parse_helm_api_event(event)
 
-        are_latest_versions_the_same = False
-        if dynamodb_entry:
-            are_latest_versions_the_same = compare_versions(
-                versions_a=dynamodb_entry.versions.get_versions_sorted_by_timestamp()[0],
-                versions_b=helm_chart.convert_to_versions().get_versions_sorted_by_timestamp()[0]
+        dynamodb_entry = db.get_helm_entry(registry=helm_event.registry, chart_name=helm_event.chart)
+        if not dynamodb_entry or not  dynamodb_entry.versions.versions:
+            eventbus.put_helm_event(registry=helm_event.registry, chart=helm_event.chart)
+            raise ApiError(
+                http_status=404,
+                error_message=f'No versions found for helm registry "{helm_event.registry}" and chart "{helm_event.chart}". Sent event to collect '
+                              f'version info! Please try again in a minute or two.'
             )
 
-        if not are_latest_versions_the_same:
-            db.upsert_helm_entry(registry=helm_registry.registry, chart=helm_chart)
-            dynamodb_entry = db.get_helm_entry(registry=helm_registry.registry, chart=helm_chart)
-
         latest_version = dynamodb_entry.versions.get_latest_version(regexp=helm_event.regexp)
-
         response = HelmResponse(
-            registry=helm_registry.registry,
-            chart=helm_chart.name,
+            registry=helm_event.registry,
+            chart=helm_event.chart,
             version=latest_version.version,
             timestamp=latest_version.timestamp,
             appVersion=latest_version.appVersion,
         )
-
         return respond(body=response.json())
     except ApiError as ae:
         return respond(

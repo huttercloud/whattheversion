@@ -194,14 +194,14 @@ class DynamoDbClient(object):
 
         return f'HELM#{registry_host}#{chart_name}'
 
-    def get_helm_entry(self, registry: str, chart: HelmChart) -> DynamoDbEntry:
+    def get_helm_entry(self, registry: str, chart_name: str) -> DynamoDbEntry:
         """
         retrieves the dynamodb entry for the helm repo/chart
         :param origin:
         :return:
         """
 
-        h = self._get_entry(pk=self._get_helm_pk(registry=registry, chart_name=chart.name))
+        h = self._get_entry(pk=self._get_helm_pk(registry=registry, chart_name=chart_name))
 
         return h
 

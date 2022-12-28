@@ -1,7 +1,7 @@
 import boto3
 from typing import Any
 
-from ..models import UpsertDynamoDBEvent, UpsertGitEventDetail
+from ..models import UpsertDynamoDBEvent, UpsertGitEventDetail, UpsertDockerEventDetail, UpsertHelmEventDetail
 
 class EventBusClient(object):
     client: Any
@@ -21,6 +21,27 @@ class EventBusClient(object):
 
         event['Detail'] = UpsertGitEventDetail(
             repository=repository
+        ).json()
+
+        self.client.put_events(
+            Entries=[
+                event
+            ]
+        )
+
+    def put_helm_event(self, registry: str, chart: str):
+        """
+        creates a custom helm event in eventbridge
+        :param registry:
+        :param chart
+        :return:
+        """
+
+        event = UpsertDynamoDBEvent().dict()
+
+        event['Detail'] = UpsertHelmEventDetail(
+            registry=registry,
+            chart=chart
         ).json()
 
         self.client.put_events(

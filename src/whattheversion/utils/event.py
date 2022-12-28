@@ -47,7 +47,7 @@ def parse_git_eventbridge_event(event: dict) -> GitRequest:
     return GitRequest(**event.get('detail'))
 
 
-def parse_helm_event(event: dict) -> HelmRequest:
+def parse_helm_api_event(event: dict) -> HelmRequest:
     """
     parse the given event and return a helm request
     :param event:
@@ -64,6 +64,14 @@ def parse_helm_event(event: dict) -> HelmRequest:
             error_message=ve.json()
         )
 
+def parse_helm_eventbridge_event(event: dict) -> HelmRequest:
+    """
+    parse the given eventbridge helm event and give back a helm request
+    :param event:
+    :return:
+    """
+
+    return HelmRequest(**event.get('detail'))
 
 def parse_docker_event(event: dict) -> DockerRequest:
     """
