@@ -41,9 +41,9 @@ def handler(event, context):
         # but will always execute the whole git clone/update dynamodb for git repos with more then 500 tags!
         dynamodb_tags = []
         if dynamodb_entry:
-            dynamodb_tags = [t.version for t in dynamodb_entry.versions.versions]
+            dynamodb_tags = [t.version for t in dynamodb_entry.versions.versions].sort()
 
-        if dynamodb_tags.sort() != git_remote_tags.sort():
+        if sorted(dynamodb_tags) != sorted(git_remote_tags):
             git_repository.git_clone()
             git_local_tags = git_repository.get_all_tags()
             db.upsert_git_entry(origin=git_repository.origin, tags=git_local_tags)
