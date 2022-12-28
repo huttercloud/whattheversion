@@ -250,3 +250,36 @@ class DynamoDbClient(object):
             pk=self._get_docker_pk(registry=registry, repository=repository),
             versions=tags.convert_to_versions()
         )
+
+    def get_all_primary_sort_keys(self) -> List[str]:
+        """
+        returns all psks in the table
+        :return:
+        """
+
+        results = []
+
+        # table resource doesnt know paginators it seems,
+        # so lets do a while true loop instead
+        lkey = None
+        while True:
+            if lkey:
+                response = self.table.scan(
+                    ExclusiveStartKey=lkey,
+                    Select='SPECIFIC_ATTRIBUTES',
+                    ProjectionExpression='PK',
+                )
+            else:
+                response = self.table.scan(
+                    Select='SPECIFIC_ATTRIBUTES',
+                    ProjectionExpression='PK',
+                )
+            lkey = response.get('LastEvaluatedKey')
+
+            for r in response['Items']:
+                results.append(r['PK'])
+
+            if not lkey:
+                break
+
+        return results
