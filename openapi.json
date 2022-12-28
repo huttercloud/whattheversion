@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://whattheversion-api.hutter.cloud",
+      "url": "https://whattheversion.hutter.cloud/api",
       "description": "Public Api Endpoint"
     },
     {

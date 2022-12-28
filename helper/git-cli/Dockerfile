@@ -3,7 +3,7 @@
 # thanks to: https://github.com/binxio/aws-lambda-git
 #
 
-FROM public.ecr.aws/lambda/python:3.9
+FROM  --platform=linux/amd64 public.ecr.aws/lambda/python:3.9
 
 RUN mkdir -p /var/task/{bin,lib}
 RUN yum install -y git zip

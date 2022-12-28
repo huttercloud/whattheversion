@@ -1,9 +1,6 @@
 #
 # thanks to: https://github.com/binxio/aws-lambda-git
 #
-.PHONY: deploy dev build start-api dependencies generate-git-zip dynamodb layers layer-git layer-python sam-deploy swagger-ui
-
-
 
 deploy: build sam-deploy swagger-ui
 
@@ -14,7 +11,7 @@ dev: build dynamodb start-api
 sam-deploy:
 	sam deploy
 
-swagger-ui:
+swagger-ui: openapi.json
 	aws s3 cp $(PWD)/openapi.json s3://whattheversion.hutter.cloud/openapi.json
 	aws s3 sync $(PWD)/swagger-ui/ s3://whattheversion.hutter.cloud/
 
