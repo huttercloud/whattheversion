@@ -191,8 +191,9 @@ class DynamoDbClient(object):
 
         up = urlparse(registry)
         registry_host = up.netloc
+        registry_path = up.path
 
-        return f'HELM#{registry_host}#{chart_name}'
+        return f'HELM#{registry_host}{registry_path}#{chart_name}'
 
     def get_helm_entry(self, registry: str, chart_name: str) -> DynamoDbEntry:
         """
