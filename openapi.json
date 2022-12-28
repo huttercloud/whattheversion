@@ -121,13 +121,20 @@
       }
     },
     "schemas": {
+      "GitRepository": {
+        "description": "https url to the git repository",
+        "type": "string",
+        "default": "https://github.com/huttercloud/whattheversion"
+      },
+      "HelmRegistry": {
+        "description": "https url to the helm registry",
+        "type": "string",
+        "default": "https://charts.external-secrets.io"
+      },
       "RegExp": {
         "description": "A python regexp string to filter version tags",
-        "type": "string"
-      },
-      "Url": {
-        "description": "An url for registry and repository",
-        "type": "string"
+        "type": "string",
+        "default": "^[0-9]+\\.?[0-9]+\\.?[0-9]+$"
       },
       "Version": {
         "description": "Version Identifier",
@@ -140,11 +147,13 @@
       },
       "Chart": {
         "description": "Name of the helm chart",
-        "type": "string"
+        "type": "string",
+        "default": "external-secrets"
       },
       "DockerImage": {
         "description": "The name of the docker image",
-        "type": "string"
+        "type": "string",
+        "default": "pihole/pihole"
       },
       "DockerRegistry": {
         "description": "The docker registry",
@@ -158,12 +167,10 @@
         ],
         "properties": {
           "repository": {
-            "$ref": "#/components/schemas/Url",
-            "example": "https://github.com/huttercloud/whattheversion"
+            "$ref": "#/components/schemas/GitRepository"
           },
           "regexp": {
-            "$ref": "#/components/schemas/RegExp",
-            "example": "^[0-9]+\\\\.?[0-9]+\\\\.?[0-9]+$"
+            "$ref": "#/components/schemas/RegExp"
           }
         }
       },
@@ -176,7 +183,7 @@
         ],
         "properties": {
           "repository": {
-            "$ref": "#/components/schemas/Url"
+            "$ref": "#/components/schemas/GitRepository"
           },
           "version": {
             "$ref": "#/components/schemas/Version"
@@ -194,7 +201,7 @@
         ],
         "properties": {
           "registry": {
-            "$ref": "#/components/schemas/Url"
+            "$ref": "#/components/schemas/HelmRegistry"
           },
           "regexp": {
             "$ref": "#/components/schemas/RegExp"
@@ -214,7 +221,7 @@
         ],
         "properties": {
           "registry": {
-            "$ref": "#/components/schemas/Url"
+            "$ref": "#/components/schemas/HelmRegistry"
           },
           "version": {
             "$ref": "#/components/schemas/Version"

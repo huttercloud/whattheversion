@@ -171,6 +171,10 @@ class DynamoDbClient(object):
         git_host = up.netloc
         git_repo = up.path[1:]
 
+        # remove trailiing .git
+        if git_repo.endswith('.git'):
+            git_repo = git_repo[:-4]
+
         return f'GIT#{git_host}#{git_repo}'
 
     def get_git_entry(self, origin: str) -> DynamoDbEntry:
