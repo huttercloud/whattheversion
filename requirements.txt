@@ -2,7 +2,7 @@ boto3
 botocore
 pydantic
 GitPython
-pyyaml
+#pyyaml
 requests
-aiohttp
-aiohttp-retry
+#aiohttp
+#aiohttp-retry
