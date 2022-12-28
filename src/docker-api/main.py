@@ -101,14 +101,16 @@ if __name__ == '__main__':
     from whattheversion.utils import FakeAwsContext
     event = dict(
         body=json.dumps(dict(
-            # # dockerhub example
+            # # dockerhub examples
             #image='linuxserver/sabnzbd',
             #regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
+            image='filebrowser/filebrowser',
+            regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
 
             # k8s.gcr.io example
-            registry='k8s.gcr.io',
-            image='external-dns/external-dns',
-            regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$'
+            # registry='k8s.gcr.io',
+            # image='external-dns/external-dns',
+            # regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$'
             #
             # # quay.io example
             # registry='quay.io',
