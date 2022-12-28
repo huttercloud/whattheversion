@@ -14,11 +14,11 @@ class HelmResponse(BaseModel):
     chart: str
     version: str
     timestamp: datetime
-    appVersion: str
+    appVersion: Optional[str]
 
 
 class HelmChartEntry(BaseModel):
-    appVersion: str
+    appVersion: Optional[str]
     version: str
     created: datetime
 

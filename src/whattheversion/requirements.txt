@@ -1,4 +1,4 @@
 pydantic
 GitPython
 requests
-aiohttp
+pyyaml

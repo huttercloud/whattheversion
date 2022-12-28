@@ -11,8 +11,8 @@ class DockerRegistryV2(object):
 
         self.api_base = f'https://{self.registry}/v2'
 
-    def get_repository(self, image, **kwargs) -> DockerRepositoryV2:
-        return DockerRepositoryV2(repository=image, registry_base_url=self.api_base)
+    def get_repository(self, repository, **kwargs) -> DockerRepositoryV2:
+        return DockerRepositoryV2(repository=repository, registry_base_url=self.api_base)
 
 
 class DockerRegistryDockerHub(DockerRegistryV2):
@@ -20,12 +20,12 @@ class DockerRegistryDockerHub(DockerRegistryV2):
     def __init__(self, registry: str):
         super().__init__(registry)
 
-    def get_repository(self, image, **kwargs) -> DockerRepositoryDockerHub:
+    def get_repository(self, repository, **kwargs) -> DockerRepositoryDockerHub:
         headers = {
             'Content-Type': 'application/json',
         }
 
-        return DockerRepositoryDockerHub(repository=image, registry_base_url=self.api_base, http_headers=headers)
+        return DockerRepositoryDockerHub(repository=repository, registry_base_url=self.api_base, http_headers=headers)
 
 class DockerRegistryQuayIo(DockerRegistryV2):
 
@@ -33,12 +33,12 @@ class DockerRegistryQuayIo(DockerRegistryV2):
         super().__init__(registry)
 
 
-    def get_repository(self, image, **kwargs) -> DockerRepositoryV2:
+    def get_repository(self, repository, **kwargs) -> DockerRepositoryV2:
         headers = {
             'Content-Type': 'application/json',
         }
 
-        return DockerRepositoryQuay(repository=image, registry_base_url=self.api_base, http_headers=headers)
+        return DockerRepositoryQuay(repository=repository, registry_base_url=self.api_base, http_headers=headers)
 
 
 def create_docker_registry(registry: str) -> DockerRegistryV2:

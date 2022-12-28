@@ -6,8 +6,7 @@ from ..utils import ApiError
 from ..models import GitTag, GitTags
 from dateutil import parser
 from typing import List
-from ..dynamodb import DynamoDbClient
-
+import logging
 class GitRepository(object):
     origin: str
     directory: str
@@ -16,6 +15,9 @@ class GitRepository(object):
     def __init__(self, origin: str):
         self.origin = origin
 
+    # get_remote_tags isnt used anymore as the updating of dynamodb is now outsourced to
+    # dedicated lambdas which can run for 15 minutes and are only triggered on a schedule,
+    # so no need to verify the available tags before doing a more "expensive" git clone.
     def get_remote_tags(self) -> List[str]:
         """
         returns a list of tags found with ls-remote
@@ -53,12 +55,20 @@ class GitRepository(object):
         """
 
         try:
+
+            logging.debug('create temp dir')
             self.directory = tempfile.mkdtemp()
+            logging.debug(f'temp dir: {self.directory}')
+            logging.debug('initialize git repo')
             self.repo = Repo.init(path=self.directory, mkdir=False)
+            logging.debug(f'setup git origin {self.origin}')
             self.repo.create_remote(name='origin', url=self.origin)
+            logging.debug(f'configure partialclone')
             self.repo.git.config('extensions.partialClone', 'true')
+            logging.debug(f'git fetch')
             self.repo.git.fetch('--filter=blob:none', '--tags', '--depth=1' , 'origin')
         except GitCommandError as gce:
+            logging.error(gce.stderr)
             raise ApiError(
                 http_status=400,
                 error_message=gce.stderr

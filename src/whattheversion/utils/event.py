@@ -4,7 +4,7 @@ from pydantic import ValidationError
 import json
 
 
-def parse_event_body(event: dict) -> dict:
+def parse_api_event_body(event: dict) -> dict:
     """
     parse the given event body
     :param event:
@@ -20,14 +20,14 @@ def parse_event_body(event: dict) -> dict:
         )
 
 
-def parse_git_event(event: dict) -> GitRequest:
+def parse_git_api_event(event: dict) -> GitRequest:
     """
     parse the given event and return a git request
     :param event:
     :return:
     """
 
-    body = parse_event_body(event)
+    body = parse_api_event_body(event)
 
     try:
         return GitRequest(**body)
@@ -37,15 +37,24 @@ def parse_git_event(event: dict) -> GitRequest:
             error_message=ve.json()
         )
 
+def parse_git_eventbridge_event(event: dict) -> GitRequest:
+    """
+    parse the given eventbridge git event and give back a git request
+    :param event:
+    :return:
+    """
 
-def parse_helm_event(event: dict) -> HelmRequest:
+    return GitRequest(**event.get('detail'))
+
+
+def parse_helm_api_event(event: dict) -> HelmRequest:
     """
     parse the given event and return a helm request
     :param event:
     :return:
     """
 
-    body = parse_event_body(event)
+    body = parse_api_event_body(event)
 
     try:
         return HelmRequest(**body)
@@ -55,15 +64,23 @@ def parse_helm_event(event: dict) -> HelmRequest:
             error_message=ve.json()
         )
 
+def parse_helm_eventbridge_event(event: dict) -> HelmRequest:
+    """
+    parse the given eventbridge helm event and give back a helm request
+    :param event:
+    :return:
+    """
 
-def parse_docker_event(event: dict) -> DockerRequest:
+    return HelmRequest(**event.get('detail'))
+
+def parse_docker_api_event(event: dict) -> DockerRequest:
     """
     parse the given event and return a docker request
     :param event:
     :return:
     """
 
-    body = parse_event_body(event)
+    body = parse_api_event_body(event)
 
     try:
         return DockerRequest(**body)
@@ -72,3 +89,12 @@ def parse_docker_event(event: dict) -> DockerRequest:
             http_status=400,
             error_message=ve.json()
         )
+
+def parse_docker_eventbridge_event(event: dict) -> DockerRequest:
+    """
+    parse the given eventbridge docker event and give back a docker request
+    :param event:
+    :return:
+    """
+
+    return DockerRequest(**event.get('detail'))

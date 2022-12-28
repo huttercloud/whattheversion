@@ -86,7 +86,7 @@ class DynamoDbClient(object):
         entry = i[0]
         # fake versions (the versions model requires versions: List[version]
         # while the answer returns just List[versions]
-        entry['versions'] = Versions(versions=entry['versions'])
+        entry['versions'] = Versions(versions=entry.get('versions', []))
 
         return DynamoDbEntry(**entry)
 
@@ -191,17 +191,18 @@ class DynamoDbClient(object):
 
         up = urlparse(registry)
         registry_host = up.netloc
+        registry_path = up.path
 
-        return f'HELM#{registry_host}#{chart_name}'
+        return f'HELM#{registry_host}{registry_path}#{chart_name}'
 
-    def get_helm_entry(self, registry: str, chart: HelmChart) -> DynamoDbEntry:
+    def get_helm_entry(self, registry: str, chart_name: str) -> DynamoDbEntry:
         """
         retrieves the dynamodb entry for the helm repo/chart
         :param origin:
         :return:
         """
 
-        h = self._get_entry(pk=self._get_helm_pk(registry=registry, chart_name=chart.name))
+        h = self._get_entry(pk=self._get_helm_pk(registry=registry, chart_name=chart_name))
 
         return h
 
@@ -249,3 +250,36 @@ class DynamoDbClient(object):
             pk=self._get_docker_pk(registry=registry, repository=repository),
             versions=tags.convert_to_versions()
         )
+
+    def get_all_primary_sort_keys(self) -> List[str]:
+        """
+        returns all psks in the table
+        :return:
+        """
+
+        results = []
+
+        # table resource doesnt know paginators it seems,
+        # so lets do a while true loop instead
+        lkey = None
+        while True:
+            if lkey:
+                response = self.table.scan(
+                    ExclusiveStartKey=lkey,
+                    Select='SPECIFIC_ATTRIBUTES',
+                    ProjectionExpression='PK',
+                )
+            else:
+                response = self.table.scan(
+                    Select='SPECIFIC_ATTRIBUTES',
+                    ProjectionExpression='PK',
+                )
+            lkey = response.get('LastEvaluatedKey')
+
+            for r in response['Items']:
+                results.append(r['PK'])
+
+            if not lkey:
+                break
+
+        return results

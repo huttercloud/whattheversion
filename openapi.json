@@ -134,7 +134,7 @@
       "RegExp": {
         "description": "A python regexp string to filter version tags",
         "type": "string",
-        "default": "^[0-9]+\\.?[0-9]+\\.?[0-9]+$"
+        "default": "^v?[0-9]+\\.?[0-9]+\\.?[0-9]+$"
       },
       "Version": {
         "description": "Version Identifier",
@@ -150,8 +150,8 @@
         "type": "string",
         "default": "external-secrets"
       },
-      "DockerImage": {
-        "description": "The name of the docker image",
+      "DockerRepository": {
+        "description": "The name of the docker repository",
         "type": "string",
         "default": "pihole/pihole"
       },
@@ -250,8 +250,8 @@
           "regexp": {
             "$ref": "#/components/schemas/RegExp"
           },
-          "image": {
-            "$ref": "#/components/schemas/DockerImage"
+          "repository": {
+            "$ref": "#/components/schemas/DockerRepository"
           }
         }
       },
@@ -273,8 +273,8 @@
           "timestamp": {
             "$ref": "#/components/schemas/Timestamp"
           },
-          "image": {
-            "$ref": "#/components/schemas/DockerImage"
+          "repository": {
+            "$ref": "#/components/schemas/DockerRepository"
           }
         }
       },
