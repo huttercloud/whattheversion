@@ -29,7 +29,21 @@ def handler(event, context):
         git_remote_tags = git_repository.get_remote_tags()
         dynamodb_entry = db.get_git_entry(origin=git_repository.origin)
 
-        if not dynamodb_entry or len(dynamodb_entry.versions.versions) != len(git_remote_tags):
+
+        # the dynamodb list is limited to max 500 entries
+        # (a dynamidb list can be max 4kb in size, this can easily be reached with
+        # bigger helm and docker repos. to ensure the dynamodb is still feed
+        # with newer tags the compare_versions function is used in helm and docker
+        # this is not possible for git at this stage in the process as git ls remote
+        # doesnt return a timestamp.
+        # instead lets compare the returned git tags from dynamodb with all tags returned
+        # by git ls-remote. this should do the trick for smaller git repos
+        # but will always execute the whole git clone/update dynamodb for git repos with more then 500 tags!
+        dynamodb_tags = []
+        if dynamodb_entry:
+            dynamodb_tags = [t.version for t in dynamodb_entry.versions.versions]
+
+        if sorted(dynamodb_tags) != sorted(git_remote_tags):
             git_repository.git_clone()
             git_local_tags = git_repository.get_all_tags()
             db.upsert_git_entry(origin=git_repository.origin, tags=git_local_tags)

@@ -7,8 +7,8 @@
 
 
 from whattheversion.utils import ApiError, respond, parse_docker_event, setup_logging
-from whattheversion.docker import create_docker_registry, DockerRepositoryQuay, DockerRepositoryV2
-from whattheversion.models import DockerResponse, DockerImageTags, DockerImageTag, DynamoDbEntry
+from whattheversion.docker import create_docker_registry, DockerRepositoryQuay, DockerRepositoryV2, DockerRepositoryDockerHub
+from whattheversion.models import DockerResponse, DockerImageTags, DockerImageTag, DynamoDbEntry, compare_versions
 from whattheversion.dynamodb import DynamoDbClient
 from typing import List
 
@@ -43,15 +43,23 @@ def handler(event, context):
         docker_registry = create_docker_registry(registry=docker_event.registry)
         docker_repository = docker_registry.get_repository(image=docker_event.image)
         dynamodb_entry = db.get_docker_entry(registry=docker_registry.registry, repository=docker_repository.repository)
-
         repository_tags = docker_repository.get_repository_tags()
 
-        if not dynamodb_entry or len(dynamodb_entry.versions.versions) != len(repository_tags.tags):
+        are_latest_versions_the_same = False
+        if dynamodb_entry:
+            are_latest_versions_the_same = compare_versions(
+                versions_a=dynamodb_entry.versions.get_versions_sorted_by_timestamp()[0],
+                versions_b=repository_tags.convert_to_versions().get_versions_sorted_by_timestamp()[0]
+            )
 
-            # quay.io works a little bit different then a v2 registry as there is a
-            # custom public api to query to get tags with timestamps
-            # the returned tags from a quay repo already contains all the required info
+        if not are_latest_versions_the_same:
+            # depending on the repository type the tags are collected
+            # either via custom api (quay.io / docker hub) or via the registry v2 api
             if isinstance(docker_repository, DockerRepositoryQuay):
+                db.upsert_docker_entry(registry=docker_registry.registry,
+                                       repository=docker_repository.repository,
+                                       tags=repository_tags)
+            if isinstance(docker_repository, DockerRepositoryDockerHub):
                 db.upsert_docker_entry(registry=docker_registry.registry,
                                        repository=docker_repository.repository,
                                        tags=repository_tags)
@@ -102,10 +110,10 @@ if __name__ == '__main__':
     event = dict(
         body=json.dumps(dict(
             # # dockerhub examples
-            #image='linuxserver/sabnzbd',
-            #regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
-            image='filebrowser/filebrowser',
-            regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
+            image='linuxserver/sabnzbd',
+            regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
+            # image='filebrowser/filebrowser',
+            # regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
 
             # k8s.gcr.io example
             # registry='k8s.gcr.io',

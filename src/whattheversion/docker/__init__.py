@@ -1,2 +1,2 @@
 from .registry import create_docker_registry
-from .repository import DockerRepositoryQuay, DockerRepositoryV2
+from .repository import DockerRepositoryQuay, DockerRepositoryV2, DockerRepositoryDockerHub

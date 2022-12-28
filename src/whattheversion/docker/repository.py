@@ -69,7 +69,8 @@ class DockerRepositoryV2(object):
 
         docker_image_tags = DockerImageTags(tags=[])
         for tag in found_tags:
-            docker_image_tags.tags.append(DockerImageTag(tag=tag))
+            # fake the timestamp just to allow for main lambda function to continue
+            docker_image_tags.tags.append(DockerImageTag(tag=tag, created=datetime.now()))
 
         return docker_image_tags
 
@@ -284,5 +285,46 @@ class DockerRepositoryQuay(DockerRepositoryV2):
                 )
             )
 
+
+        return docker_image_tags
+
+class DockerRepositoryDockerHub(DockerRepositoryV2):
+    def __init__(self, repository: str, registry_base_url: str, http_headers=None):
+        super().__init__(repository, registry_base_url, http_headers)
+
+        self.repository_base_url = f'https://hub.docker.com/v2/repositories/{self.repository}'
+
+    def get_repository_tags(self) -> DockerImageTags:
+
+        results = []
+        page = 1
+        # the hub api retrieves the newest images
+        # first, as we are only interested in the latest tags
+        # 500 tags should be enough
+        while page <= 5:
+            parameters = dict(
+                page=page,
+                page_size=100,
+            )
+
+            r = requests.get(url=f'{self.repository_base_url}/tags', params=parameters)
+            r.raise_for_status()
+
+            results += r.json()['results']
+
+            if not r.json()['next']:
+                break
+            page += 1
+
+        docker_image_tags = DockerImageTags(tags=[])
+        for tag in results:
+            docker_image_tags.tags.append(
+                DockerImageTag(
+                    tag=tag['name'],
+                    # some tags dont have a digest?
+                    digest=tag.get('images',[])[0].get('digest'),
+                    created=datetime.strptime(tag['tag_last_pushed'], '%Y-%m-%dT%H:%M:%S.%fZ')
+                )
+            )
 
         return docker_image_tags
