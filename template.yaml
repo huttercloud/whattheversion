@@ -181,13 +181,15 @@ Resources:
         ContentUri: ./layers/git
         RetentionPolicy: Retain
 
-  HelmToJsonLayer:
-    Type: AWS::Serverless::LayerVersion
-    Properties:
-        LayerName: helm-to-json
-        Description: Contains single executable to download and convert yaml to json
-        ContentUri: ./layers/helm-to-json
-        RetentionPolicy: Retain
+# this layer isnt required anymore, longer run times of the event lambda for helm is ok
+# no need for a custom go bin anymore
+#  HelmToJsonLayer:
+#    Type: AWS::Serverless::LayerVersion
+#    Properties:
+#        LayerName: helm-to-json
+#        Description: Contains single executable to download and convert yaml to json
+#        ContentUri: ./layers/helm-to-json
+#        RetentionPolicy: Retain
 
   FunctionLayer:
     Type: AWS::Serverless::LayerVersion
@@ -343,7 +345,6 @@ Resources:
       Timeout: 300
       Layers:
         - !Ref FunctionLayer
-        - !Ref HelmToJsonLayer
         - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
       Environment:
         Variables:
@@ -399,3 +400,33 @@ Resources:
               detail:
                 source:
                   - "docker"
+  CronEvent:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/cron-event
+      Handler: main.handler
+      Runtime: python3.9
+      Architectures: ['x86_64']
+      Timeout: 300
+      Layers:
+        - !Ref FunctionLayer
+        - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
+      Environment:
+        Variables:
+          LOGLEVEL: !Ref LambdaLogLevel
+          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName:
+              !Ref DynamoDBTable
+        - EventBridgePutEventsPolicy:
+            EventBusName: default
+      Tracing: Active
+      Events:
+        WhatTheVersionEvent:
+          Type: Schedule
+          Properties:
+            Schedule: 'rate(4 hours)'
+            Name: WhattheversionDynamoDb
+            Description: Update whattheversion dynamodb
+            Enabled: true
