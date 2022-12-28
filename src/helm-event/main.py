@@ -8,6 +8,7 @@
 import os
 os.environ['PATH'] = ':'.join(['/opt/helm-to-json', os.environ.get('PATH')])
 
+import logging
 from whattheversion.utils import parse_helm_eventbridge_event, setup_logging
 from whattheversion.helm import HelmRegistry
 from whattheversion.dynamodb import DynamoDbClient

@@ -4,7 +4,7 @@
     lambda function handler for helm-api requests
 """
 
-
+import logging
 from whattheversion.utils import ApiError, respond, parse_helm_api_event, setup_logging
 from whattheversion.models import HelmResponse
 from whattheversion.dynamodb import DynamoDbClient

@@ -5,15 +5,6 @@
     lambda function handler for docker-api requests
 """
 
-#
-# import logging
-# from whattheversion.utils import ApiError, respond, parse_docker_api_event, setup_logging
-# from whattheversion.docker import create_docker_registry, DockerRepositoryQuay, DockerRepositoryV2, DockerRepositoryDockerHub
-# from whattheversion.models import DockerResponse, DockerImageTags, DockerImageTag, DynamoDbEntry, compare_versions
-# from whattheversion.dynamodb import DynamoDbClient
-# from typing import List
-
-
 import logging
 from whattheversion.utils import setup_logging
 from whattheversion.utils import parse_docker_eventbridge_event
