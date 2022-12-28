@@ -5,7 +5,7 @@ from ..utils import ApiError, is_local_dev
 import logging
 import socket
 from urllib.parse import urlparse
-from boto3.dynamodb.conditions import Key, Attr
+from boto3.dynamodb.conditions import Key
 from ..models import GitTags, Versions, Version, DynamoDbEntry, HelmChart, DockerImageTags
 
 
@@ -90,7 +90,7 @@ class DynamoDbClient(object):
 
         return DynamoDbEntry(**entry)
 
-    def _upsert_entry(self, pk: str, versions: Versions, payload=None):
+    def _upsert_entry(self, pk: str, versions: Versions, payload=None, limit_version_to: int = 500):
         """
         create or update the given entry
         update operation only updates the versions list of the entry
@@ -103,18 +103,31 @@ class DynamoDbClient(object):
         if payload is None:
             payload = {}
 
-        # create entry if it doesnt exist
+        # if the entry exists the versions need to be updated but limited
+        # to the max amount of items specifioed
+        current_entry = self._get_entry(pk=pk)
+        current_versions = []
+        if current_entry:
+            current_versions = current_entry.versions.get_versions_sorted_by_timestamp()
+        given_versions = versions.get_versions_sorted_by_timestamp()
+        missing_versions = [v for v in given_versions if v not in current_versions]
+        # setup a new versions object to allow sorting by timestamp
+        versions_to_insert = Versions(
+            versions=missing_versions + current_versions
+        ).get_versions_sorted_by_timestamp()[:limit_version_to]
+
+        # create/update entry if it doesnt exist
         try:
             item = {
                 **dict(
                     PK=pk,
-                    versions=self._convert_versions_to_item_dict(versions=versions.get_versions_sorted_by_timestamp())
+                    versions=self._convert_versions_to_item_dict(versions_to_insert)
                 ),
                 **payload
             }
             self.table.put_item(
                 Item=item,
-                ConditionExpression=Attr('PK').not_exists(),
+                #ConditionExpression=Attr('PK').not_exists(),
                 ReturnValues='NONE',
             )
             return
@@ -122,38 +135,6 @@ class DynamoDbClient(object):
             if ce.response['Error']['Code'] == 'ConditionalCheckFailedException':
                 pass
             else:
-                raise ApiError(
-                    http_status=500,
-                    error_message=ce.response['Error']['Message']
-                )
-
-        # there is surely a more efficient and neater way to
-        # only insert the missing dicts into the versions field
-        # but good enough for now...
-        current_entry = self._get_entry(pk=pk)
-        versions_missing = [v for v in
-                            current_entry.versions.get_versions_sorted_by_timestamp() + versions.get_versions_sorted_by_timestamp()
-                            if v not in current_entry.versions.get_versions_sorted_by_timestamp()]
-
-        if versions_missing:
-            # update loop for versions
-            try:
-                self.table.update_item(
-                    Key={
-                        'PK': pk,
-                    },
-                    UpdateExpression='SET #v = list_append(#v, :versions)',
-                    ExpressionAttributeNames={
-                        '#v': 'versions',
-                    },
-                    ExpressionAttributeValues={
-                        ':versions': self._convert_versions_to_item_dict(versions=versions_missing)
-                    },
-                    ConditionExpression=Attr('PK').exists()
-
-                )
-                return
-            except ClientError as ce:
                 raise ApiError(
                     http_status=500,
                     error_message=ce.response['Error']['Message']

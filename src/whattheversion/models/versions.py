@@ -50,3 +50,20 @@ class Versions(BaseModel):
             )
 
         return sorted_versions[0]
+
+
+def compare_versions(versions_a: Version, versions_b: Version) -> bool:
+    """
+    compare the versions timestamp and version
+    returns true if equal
+    returnts false if noy
+    :param versions_a:
+    :param versions_b:
+    :return:
+    """
+
+    if versions_a.version == versions_b.version:
+        if versions_a.timestamp == versions_b.timestamp:
+            return True
+
+    return False

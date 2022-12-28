@@ -297,7 +297,10 @@ class DockerRepositoryDockerHub(DockerRepositoryV2):
 
         results = []
         page = 1
-        while True:
+        # the hub api retrieves the newest images
+        # first, as we are only interested in the latest tags
+        # 500 tags should be enough
+        while page <= 5:
             parameters = dict(
                 page=page,
                 page_size=100,

@@ -94,7 +94,6 @@ def is_local_dev() -> bool:
 
     return False
 
-
 def setup_logging():
     """
     configures the default logger for aws lambdas
