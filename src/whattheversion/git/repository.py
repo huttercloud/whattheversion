@@ -6,8 +6,7 @@ from ..utils import ApiError
 from ..models import GitTag, GitTags
 from dateutil import parser
 from typing import List
-from ..dynamodb import DynamoDbClient
-
+import logging
 class GitRepository(object):
     origin: str
     directory: str
@@ -56,12 +55,20 @@ class GitRepository(object):
         """
 
         try:
+
+            logging.debug('create temp dir')
             self.directory = tempfile.mkdtemp()
+            logging.debug(f'temp dir: {self.directory}')
+            logging.debug('initialize git repo')
             self.repo = Repo.init(path=self.directory, mkdir=False)
+            logging.debug(f'setup git origin {self.origin}')
             self.repo.create_remote(name='origin', url=self.origin)
+            logging.debug(f'configure partialclone')
             self.repo.git.config('extensions.partialClone', 'true')
+            logging.debug(f'git fetch')
             self.repo.git.fetch('--filter=blob:none', '--tags', '--depth=1' , 'origin')
         except GitCommandError as gce:
+            logging.error(gce.stderr)
             raise ApiError(
                 http_status=400,
                 error_message=gce.stderr
