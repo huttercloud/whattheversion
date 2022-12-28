@@ -379,6 +379,7 @@ $RECYCLE.BIN/
 
 # ignore local zip generate by generate-zip make target
 libraries.zip
+git-cli-amd64.zip
 
 # ignore layers
 layers
@@ -386,3 +387,6 @@ layers
 # ignore build directoy but allow subdir
 build/*
 !helper/build/*
+
+helm-to-json.linux*
+helm-to-json.macos*

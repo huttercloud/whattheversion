@@ -1,5 +1,5 @@
 import requests
-from .repository import DockerRepositoryV2
+from .repository import DockerRepositoryV2, DockerRepositoryQuay
 
 
 class DockerRegistryV2(object):
@@ -35,6 +35,19 @@ class DockerRegistryDockerHub(DockerRegistryV2):
 
         return DockerRepositoryV2(repository=image, registry_base_url=self.api_base, http_headers=headers)
 
+class DockerRegistryQuayIo(DockerRegistryV2):
+
+    def __init__(self, registry: str):
+        super().__init__(registry)
+
+
+    def get_repository(self, image, **kwargs) -> DockerRepositoryV2:
+        headers = {
+            'Content-Type': 'application/json',
+        }
+
+        return DockerRepositoryQuay(repository=image, registry_base_url=self.api_base, http_headers=headers)
+
 
 def create_docker_registry(registry: str) -> DockerRegistryV2:
     """
@@ -45,7 +58,8 @@ def create_docker_registry(registry: str) -> DockerRegistryV2:
 
     if registry == 'registry.hub.docker.com':
         return DockerRegistryDockerHub(registry=registry)
-
+    elif registry == 'quay.io':
+        return DockerRegistryQuayIo(registry=registry)
     else:
         return DockerRegistryV2(registry=registry)
 

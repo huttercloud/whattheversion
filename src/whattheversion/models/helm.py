@@ -14,10 +14,10 @@ class HelmResponse(BaseModel):
     chart: str
     version: str
     timestamp: datetime
+    appVersion: str
 
 
 class HelmChartEntry(BaseModel):
-    apiVersion: str
     appVersion: str
     version: str
     created: datetime
@@ -32,6 +32,6 @@ class HelmChart(BaseModel):
         v = Versions(versions=[])
 
         for e in self.entries:
-            v.versions.append(Version(version=e.version, timestamp=e.created))
+            v.versions.append(Version(version=e.version, timestamp=e.created, appVersion=e.appVersion))
 
         return v

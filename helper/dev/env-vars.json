@@ -1,0 +1,11 @@
+{
+  "GitVersion": {
+    "LOGLEVEL": "DEBUG"
+  },
+  "DockerVersion": {
+    "LOGLEVEL": "DEBUG"
+  },
+  "HelmVersion": {
+    "LOGLEVEL": "DEBUG"
+  }
+}

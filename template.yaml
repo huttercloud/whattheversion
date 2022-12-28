@@ -25,7 +25,12 @@ Parameters:
   AcmCertificateArn:
     Type: String
     Default: "arn:aws:acm:us-east-1:337261303015:certificate/66380bfb-6ebd-4671-bc1c-3da39eddb73b"
-
+  DynamoDBTableName:
+    Type: String
+    Default: "whattheversion"
+  LambdaLogLevel:
+    Type: String
+    Default: "WARNING"
 Resources:
   ##
   # cloudfront distribution
@@ -128,16 +133,34 @@ Resources:
         HostedZoneId: "Z2FDTNDATAQYW2" # CloudFront
 
   ##
+  # dynamodb
+  ##
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref DynamoDBTableName
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  ##
   # api gateway
   ##
+
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
-      StageName: api # stage name is required to allow routing from cloudfront /api/*
+      StageName: api
      # would be really cool to use openapi spec to automatically
      # configure all routes
      # the problem is that the lambda invoke permission isnt created
-     # and i havent found a way how to retrieve the route arn dynamically
+     # and I haven't found a way how to retrieve the route arn dynamically
      # from sam/cf to reference it as source arn in "AWS::Lambda::Permission"
      # DefinitionBody:
      #   'Fn::Transform':
@@ -145,12 +168,25 @@ Resources:
      #     Parameters:
      #       Location: ./openapi-spec.yaml
 
+
+  ##
+  # lambda functions
+  ##
+
   GitLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
         LayerName: git
         Description: Contains git binary and libs
         ContentUri: ./layers/git
+        RetentionPolicy: Retain
+
+  HelmToJsonLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+        LayerName: helm-to-json
+        Description: Contains single executable to download and convert yaml to json
+        ContentUri: ./layers/helm-to-json
         RetentionPolicy: Retain
 
   FunctionLayer:
@@ -174,11 +210,20 @@ Resources:
       Layers:
         - !Ref FunctionLayer
         - !Ref GitLayer
+        # i am unable to run opentelemtry locally with sam start api, so disabled until local dev and prod are in sync
+        #- !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
       Environment:
         # thanks to: https://github.com/binxio/aws-lambda-git
         Variables:
           LD_LIBRARY_PATH: "/opt/git/lib:$LD_LIBRARY_PATH"
           PATH: "/opt/git/bin:$PATH"
+          LOGLEVEL: !Ref LambdaLogLevel
+          #AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              !Ref DynamoDBTable
+      Tracing: Active
       Events:
         WhatTheVersionEvent:
           Type: HttpApi 
@@ -186,6 +231,7 @@ Resources:
             Path: /git
             Method: post
             ApiId: !Ref HttpApi
+            TimeoutInMillis: 29000
 
   HelmVersion:
     Type: AWS::Serverless::Function
@@ -197,6 +243,18 @@ Resources:
       Timeout: 300
       Layers:
         - !Ref FunctionLayer
+        - !Ref HelmToJsonLayer
+        #- !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
+      Environment:
+        Variables:
+          LOGLEVEL: !Ref LambdaLogLevel
+          PATH: "/opt/helm-to-json:$PATH"
+          #AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              !Ref DynamoDBTable
+      Tracing: Active
       Events:
         WhatTheVersionEvent:
           Type: HttpApi
@@ -204,6 +262,7 @@ Resources:
             Path: /helm
             Method: post
             ApiId: !Ref HttpApi
+            TimeoutInMillis: 29000
 
   DockerVersion:
     Type: AWS::Serverless::Function
@@ -215,6 +274,16 @@ Resources:
       Timeout: 300
       Layers:
         - !Ref FunctionLayer
+        #- !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
+      Environment:
+        Variables:
+          LOGLEVEL: !Ref LambdaLogLevel
+          #AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              !Ref DynamoDBTable
+      Tracing: Active
       Events:
         WhatTheVersionEvent:
           Type: HttpApi
@@ -222,3 +291,4 @@ Resources:
             Path: /docker
             Method: post
             ApiId: !Ref HttpApi
+            TimeoutInMillis: 29000

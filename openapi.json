@@ -219,6 +219,9 @@
           "version": {
             "$ref": "#/components/schemas/Version"
           },
+          "appVersion": {
+            "$ref": "#/components/schemas/Version"
+          },
           "timestamp": {
             "$ref": "#/components/schemas/Timestamp"
           },

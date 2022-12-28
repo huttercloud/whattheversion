@@ -17,11 +17,17 @@ class DockerResponse(BaseModel):
 
 class DockerImageTag(BaseModel):
     tag: str
-    digest: str
-    created: datetime
+    digest: Optional[str]
+    created: Optional[datetime]
 
-class DockerRepository(BaseModel):
-    repository: str
-
+class DockerImageTags(BaseModel):
     tags: List[DockerImageTag]
 
+
+    def convert_to_versions(self) -> Versions:
+        v = Versions(versions=[])
+
+        for e in self.tags:
+            v.versions.append(Version(version=e.tag, timestamp=e.created, digest=e.digest))
+
+        return v
