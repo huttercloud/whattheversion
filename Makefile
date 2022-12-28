@@ -37,7 +37,7 @@ dynamodb:
 		--endpoint-url http://localhost:8000
 
 start-api:
-	LOGLEVEL=DEBUG sam local start-api --warm-containers EAGER --env-vars $(PWD)/helper/dev/env-vars.json
+	sam local start-api --warm-containers EAGER --env-vars $(PWD)/helper/dev/env-vars.json
 
 #
 # layers
