@@ -69,7 +69,8 @@ class DockerRepositoryV2(object):
 
         docker_image_tags = DockerImageTags(tags=[])
         for tag in found_tags:
-            docker_image_tags.tags.append(DockerImageTag(tag=tag))
+            # fake the timestamp just to allow for main lambda function to continue
+            docker_image_tags.tags.append(DockerImageTag(tag=tag, created=datetime.now()))
 
         return docker_image_tags
 

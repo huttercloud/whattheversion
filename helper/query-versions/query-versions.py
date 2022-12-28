@@ -7,6 +7,7 @@
 import requests
 import json
 import logging
+import click
 
 VERSIONS=dict(
     git=[
@@ -86,10 +87,10 @@ VERSIONS=dict(
     ]
 )
 
-ENDPOINT='https://whattheversion.hutter.cloud/api'
 
-if __name__ == '__main__':
-
+@click.command()
+@click.option('--endpoint', default='https://whattheversion.hutter.cloud/api')
+def query(endpoint: str):
     results=dict(
         git=[],
         docker=[],
@@ -97,28 +98,31 @@ if __name__ == '__main__':
     )
 
     # # query git versions
-    for git in VERSIONS.get('git'):
+    for git in VERSIONS.get('git', []):
         try:
-            r = requests.post(url=f'{ENDPOINT}/git', json=git)
+            r = requests.post(url=f'{endpoint}/git', json=git)
             r.raise_for_status()
             results.get('git').append(r.json())
         except Exception as e:
             logging.warning(f'Error when retrieving versions for git:{git}: {e}')
     # # query helm versions
-    for helm in VERSIONS.get('helm'):
+    for helm in VERSIONS.get('helm', []):
         try:
-            r = requests.post(url=f'{ENDPOINT}/helm', json=helm)
+            r = requests.post(url=f'{endpoint}/helm', json=helm)
             r.raise_for_status()
             results.get('helm').append(r.json())
         except Exception as e:
             logging.warning(f'Error when retrieving versions for helm:{helm}: {e}')
     # query docker versions
-    for docker in VERSIONS.get('docker'):
+    for docker in VERSIONS.get('docker', []):
         try:
-            r = requests.post(url=f'{ENDPOINT}/docker', json=docker)
+            r = requests.post(url=f'{endpoint}/docker', json=docker)
             r.raise_for_status()
             results.get('docker').append(r.json())
         except Exception as e:
             logging.warning(f'Error when retrieving versions for docker:{docker}: {e}')
 
     print(json.dumps(results, indent=2))
+
+if __name__ == '__main__':
+    query()

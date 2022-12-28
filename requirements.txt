@@ -6,3 +6,4 @@ GitPython
 requests
 #aiohttp
 #aiohttp-retry
+click
