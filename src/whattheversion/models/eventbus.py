@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Json
-from typing import Any, Optional
+from pydantic import BaseModel, Json, AnyHttpUrl
+from typing import Any
 
 
 
@@ -10,7 +10,7 @@ class UpsertDynamoDBEvent(BaseModel):
 
 class UpsertGitEventDetail(BaseModel):
     source: str = 'git'
-    repository: str
+    repository: AnyHttpUrl
 
 class UpsertDockerEventDetail(BaseModel):
     source: str = 'docker'
@@ -19,7 +19,7 @@ class UpsertDockerEventDetail(BaseModel):
 
 class UpsertHelmEventDetail(BaseModel):
     source: str = 'helm'
-    registry: str
+    registry: AnyHttpUrl
     chart: str
 
 
