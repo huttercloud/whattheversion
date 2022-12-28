@@ -386,3 +386,6 @@ layers
 # ignore build directoy but allow subdir
 build/*
 !helper/build/*
+
+helm-to-json.linux*
+helm-to-json.macos*

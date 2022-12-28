@@ -5,12 +5,17 @@
 """
 
 
-from whattheversion.utils import ApiError, respond, parse_helm_event, setup_logging
+import logging
+from whattheversion.utils import setup_logging
+
+setup_logging()
+
+from whattheversion.utils import ApiError, respond, parse_helm_event
 from whattheversion.helm import HelmRegistry
 from whattheversion.models import HelmResponse
 from whattheversion.dynamodb import DynamoDbClient
 
-setup_logging()
+
 def handler(event, context):
 
     try:
@@ -23,7 +28,6 @@ def handler(event, context):
         if not dynamodb_entry or len(dynamodb_entry.versions.versions) != len(helm_chart.entries):
             db.upsert_helm_entry(registry=helm_registry.registry, chart=helm_chart)
             dynamodb_entry = db.get_helm_entry(registry=helm_registry.registry, chart=helm_chart)
-
         latest_version = dynamodb_entry.versions.get_latest_version(regexp=helm_event.regexp)
 
         response = HelmResponse(

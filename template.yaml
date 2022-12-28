@@ -200,6 +200,14 @@ Resources:
         ContentUri: ./layers/git
         RetentionPolicy: Retain
 
+  HelmToJsonLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+        LayerName: helm-to-json
+        Description: Contains single executable to download and convert yaml to json
+        ContentUri: ./layers/helm-to-json
+        RetentionPolicy: Retain
+
   FunctionLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
@@ -249,6 +257,7 @@ Resources:
       Timeout: 300
       Layers:
         - !Ref FunctionLayer
+        - !Ref HelmToJsonLayer
       Environment:
         Variables:
           LOGLEVEL: !Ref LambdaLogLevel
