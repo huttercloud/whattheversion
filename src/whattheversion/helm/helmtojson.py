@@ -12,14 +12,7 @@ def download_and_convert_helm_index_to_json(index_url: str) -> Dict[Any, Any]:
     :return:
     """
 
-    # little hack to keep local dev env compatible
-    if is_local_dev() and os.environ.get('AWS_LAMBDA_FUNCTION_NAME', False):
-        # if running locally attach the path to the binary to the lambdas path
-        os.environ['PATH'] = ':'.join(['/opt/helm-to-json', os.environ.get('PATH')])
-
-    bin = 'helm-to-json'
-
-    result = subprocess.run([bin, index_url], capture_output=True)
+    result = subprocess.run(['helm-to-json', index_url], capture_output=True)
     if result.returncode > 0:
         raise ApiError(
             http_status=500,

@@ -210,16 +210,12 @@ Resources:
       Handler: main.handler
       Runtime: python3.9
       Architectures: ['x86_64']
-      Timeout: 300
+      Timeout: 15
       Layers:
         - !Ref FunctionLayer
-        - !Ref GitLayer
         - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
       Environment:
-        # thanks to: https://github.com/binxio/aws-lambda-git
         Variables:
-          LD_LIBRARY_PATH: "/opt/git/lib:$LD_LIBRARY_PATH"
-          PATH: "/opt/git/bin:$PATH"
           LOGLEVEL: !Ref LambdaLogLevel
           AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
       Policies:
@@ -245,15 +241,13 @@ Resources:
       Handler: main.handler
       Runtime: python3.9
       Architectures: ['x86_64']
-      Timeout: 300
+      Timeout: 15
       Layers:
         - !Ref FunctionLayer
-        - !Ref HelmToJsonLayer
         - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
       Environment:
         Variables:
           LOGLEVEL: !Ref LambdaLogLevel
-          PATH: "/opt/helm-to-json:$PATH"
           AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
       Policies:
         - DynamoDBReadPolicy:
@@ -278,7 +272,7 @@ Resources:
       Handler: main.handler
       Runtime: python3.9
       Architectures: ['x86_64']
-      Timeout: 300
+      Timeout: 15
       Layers:
         - !Ref FunctionLayer
         - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
@@ -354,7 +348,6 @@ Resources:
       Environment:
         Variables:
           LOGLEVEL: !Ref LambdaLogLevel
-          PATH: "/opt/helm-to-json:$PATH"
           AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
       Policies:
         - DynamoDBCrudPolicy:

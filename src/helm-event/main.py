@@ -5,7 +5,8 @@
 """
 
 
-
+import os
+os.environ['PATH'] = ':'.join(['/opt/helm-to-json', os.environ.get('PATH')])
 
 from whattheversion.utils import respond, parse_helm_eventbridge_event, setup_logging
 from whattheversion.helm import HelmRegistry
