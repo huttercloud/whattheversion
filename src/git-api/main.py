@@ -4,53 +4,30 @@
     lambda function handler for git-api requests
 """
 
-# if the lambda function is executed with sam locally the 
-# git layer paths need to be setup manually!
-import os
+
 import logging
-
-from whattheversion.utils import is_local_dev, setup_logging
-setup_logging()
-if is_local_dev():
-    os.environ['PATH'] = ':'.join(['/opt/git/bin', os.environ.get('PATH')])
-    os.environ['LD_LIBRARY_PATH'] = ':'.join(['/opt/git/lib', os.environ.get('LD_LIBRARY_PATH', '')])
-
-from whattheversion.utils import ApiError, respond, parse_git_event
-from whattheversion.git import GitRepository
+from whattheversion.utils import ApiError, respond, parse_git_api_event, setup_logging
 from whattheversion.models import GitResponse
 from whattheversion.dynamodb import DynamoDbClient
+from whattheversion.eventbus import EventBusClient
 
 def handler(event, context):
-
     try:
+        setup_logging()
+        eventbus = EventBusClient()
         db = DynamoDbClient()
-        git_event = parse_git_event(event)
-        git_repository = GitRepository(origin=git_event.repository)
-        git_remote_tags = git_repository.get_remote_tags()
-        dynamodb_entry = db.get_git_entry(origin=git_repository.origin)
+        git_event = parse_git_api_event(event)
 
-
-        # the dynamodb list is limited to max 500 entries
-        # (a dynamidb list can be max 4kb in size, this can easily be reached with
-        # bigger helm and docker repos. to ensure the dynamodb is still feed
-        # with newer tags the compare_versions function is used in helm and docker
-        # this is not possible for git at this stage in the process as git ls remote
-        # doesnt return a timestamp.
-        # instead lets compare the returned git tags from dynamodb with all tags returned
-        # by git ls-remote. this should do the trick for smaller git repos
-        # but will always execute the whole git clone/update dynamodb for git repos with more then 500 tags!
-        dynamodb_tags = []
-        if dynamodb_entry:
-            dynamodb_tags = [t.version for t in dynamodb_entry.versions.versions]
-
-        if sorted(dynamodb_tags) != sorted(git_remote_tags):
-            git_repository.git_clone()
-            git_local_tags = git_repository.get_all_tags()
-            db.upsert_git_entry(origin=git_repository.origin, tags=git_local_tags)
-            dynamodb_entry = db.get_git_entry(origin=git_repository.origin)
+        dynamodb_entry = db.get_git_entry(origin=git_event.repository)
+        if not dynamodb_entry or not  dynamodb_entry.versions.versions:
+            eventbus.put_git_event(repository=git_event.repository)
+            raise ApiError(
+                http_status=404,
+                error_message=f'No versions found for git repository "{git_event.repository}". Sent event to collect '
+                              f'version info! Please try again in a minute or two.'
+            )
 
         latest_version = dynamodb_entry.versions.get_latest_version(regexp=git_event.regexp)
-
         response = GitResponse(
             repository=git_event.repository,
             version=latest_version.version,

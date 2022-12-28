@@ -86,7 +86,7 @@ class DynamoDbClient(object):
         entry = i[0]
         # fake versions (the versions model requires versions: List[version]
         # while the answer returns just List[versions]
-        entry['versions'] = Versions(versions=entry['versions'])
+        entry['versions'] = Versions(versions=entry.get('versions', []))
 
         return DynamoDbEntry(**entry)
 
