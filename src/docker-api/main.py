@@ -7,7 +7,7 @@
 
 
 from whattheversion.utils import ApiError, respond, parse_docker_event, setup_logging
-from whattheversion.docker import create_docker_registry, DockerRepositoryQuay, DockerRepositoryV2
+from whattheversion.docker import create_docker_registry, DockerRepositoryQuay, DockerRepositoryV2, DockerRepositoryDockerHub
 from whattheversion.models import DockerResponse, DockerImageTags, DockerImageTag, DynamoDbEntry
 from whattheversion.dynamodb import DynamoDbClient
 from typing import List
@@ -48,10 +48,13 @@ def handler(event, context):
 
         if not dynamodb_entry or len(dynamodb_entry.versions.versions) != len(repository_tags.tags):
 
-            # quay.io works a little bit different then a v2 registry as there is a
-            # custom public api to query to get tags with timestamps
-            # the returned tags from a quay repo already contains all the required info
+            # depending on the repository type the tags are collected
+            # either via custom api (quay.io / docker hub) or via the registry v2 api
             if isinstance(docker_repository, DockerRepositoryQuay):
+                db.upsert_docker_entry(registry=docker_registry.registry,
+                                       repository=docker_repository.repository,
+                                       tags=repository_tags)
+            if isinstance(docker_repository, DockerRepositoryDockerHub):
                 db.upsert_docker_entry(registry=docker_registry.registry,
                                        repository=docker_repository.repository,
                                        tags=repository_tags)
