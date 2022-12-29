@@ -176,7 +176,7 @@ Resources:
   GitLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-        LayerName: git
+        LayerName: whattheversion-git
         Description: Contains git binary and libs
         ContentUri: ./layers/git
         RetentionPolicy: Retain
@@ -194,8 +194,8 @@ Resources:
   FunctionLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-        LayerName: whattheversionlayer
-        Description: Dependencies for whattheversion
+        LayerName: whattheversion-library
+        Description: whattheversion library
         ContentUri: ./layers/whattheversion
         CompatibleRuntimes:
           - python3.9
@@ -208,6 +208,7 @@ Resources:
   GitVersion:
     Type: AWS::Serverless::Function 
     Properties:
+      FunctionName: whattheversion-git-api
       CodeUri: src/git-api
       Handler: main.handler
       Runtime: python3.9
@@ -228,7 +229,7 @@ Resources:
             EventBusName: default
       Tracing: Active
       Events:
-        WhatTheVersionEvent:
+        Api:
           Type: HttpApi 
           Properties:
             Path: /git
@@ -239,6 +240,7 @@ Resources:
   HelmVersion:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: whattheversion-helm-api
       CodeUri: src/helm-api
       Handler: main.handler
       Runtime: python3.9
@@ -259,7 +261,7 @@ Resources:
             EventBusName: default
       Tracing: Active
       Events:
-        WhatTheVersionEvent:
+        Api:
           Type: HttpApi
           Properties:
             Path: /helm
@@ -270,6 +272,7 @@ Resources:
   DockerVersion:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: whattheversion-docker-api
       CodeUri: src/docker-api
       Handler: main.handler
       Runtime: python3.9
@@ -290,7 +293,7 @@ Resources:
             EventBusName: default
       Tracing: Active
       Events:
-        WhatTheVersionEvent:
+        Api:
           Type: HttpApi
           Properties:
             Path: /docker
@@ -305,6 +308,7 @@ Resources:
   GitEvent:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: whattheversion-git-event
       CodeUri: src/git-event
       Handler: main.handler
       Runtime: python3.9
@@ -324,7 +328,7 @@ Resources:
               !Ref DynamoDBTable
       Tracing: Active
       Events:
-        WhatTheVersionEvent:
+        EventBridge:
           Type: EventBridgeRule
           Properties:
             Pattern:
@@ -338,6 +342,7 @@ Resources:
   HelmEvent:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: whattheversion-helm-event
       CodeUri: src/helm-event
       Handler: main.handler
       Runtime: python3.9
@@ -356,7 +361,7 @@ Resources:
               !Ref DynamoDBTable
       Tracing: Active
       Events:
-        WhatTheVersionEvent:
+        EventBridge:
           Type: EventBridgeRule
           Properties:
             Pattern:
@@ -371,6 +376,7 @@ Resources:
   DockerEvent:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: whattheversion-docker-event
       CodeUri: src/docker-event
       Handler: main.handler
       Runtime: python3.9
@@ -389,7 +395,7 @@ Resources:
               !Ref DynamoDBTable
       Tracing: Active
       Events:
-        WhatTheVersionEvent:
+        EventBridge:
           Type: EventBridgeRule
           Properties:
             Pattern:
@@ -403,6 +409,7 @@ Resources:
   CronEvent:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: whattheversion-cron-event
       CodeUri: src/cron-event
       Handler: main.handler
       Runtime: python3.9
@@ -423,10 +430,10 @@ Resources:
             EventBusName: default
       Tracing: Active
       Events:
-        WhatTheVersionEvent:
+        Schedule:
           Type: Schedule
           Properties:
-            Schedule: 'rate(4 hours)'
-            Name: WhattheversionDynamoDb
+            Schedule: 'rate(12 hours)'
+            Name: whattheversion-cron-event
             Description: Update whattheversion dynamodb
             Enabled: true
