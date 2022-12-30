@@ -4,7 +4,7 @@
 
 deploy: build sam-deploy swagger-ui
 
-dev: build dynamodb start-api
+dev: build localstack dynamodb start-api
 
 
 # publish
@@ -23,18 +23,21 @@ build: layers
 #
 # local dev
 #
+localstack:
+	docker-compose up -d
+
 dynamodb:
-	-docker-compose up -d
+	@sleep 3
 	-AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local \
 	    aws dynamodb --region eu-central-1 create-table \
 		--table-name whattheversion \
 		--attribute-definitions AttributeName=PK,AttributeType=S \
 		--key-schema AttributeName=PK,KeyType=HASH \
 		--billing-mode PAY_PER_REQUEST \
-		--endpoint-url http://localhost:8000
+		--endpoint-url http://localhost:4566 >/dev/null
 
 start-api:
-	sam local start-api --warm-containers EAGER --env-vars $(PWD)/helper/dev/env-vars.json
+	sam local start-api --warm-containers EAGER --env-vars $(PWD)/helper/dev/env-vars.json --parameter-overrides ParameterKey=Environment,ParameterValue=LOCAL
 
 #
 # layers

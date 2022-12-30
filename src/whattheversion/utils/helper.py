@@ -2,6 +2,7 @@ import json
 from typing import Optional, Dict, List
 import os
 import logging
+import socket
 
 class ApiError(Exception):
     """
@@ -93,6 +94,23 @@ def is_local_dev() -> bool:
         return True
 
     return False
+
+def get_dev_endpoint() -> str:
+    """
+    return the development endpoint 
+    :return:
+    """
+
+    endpoint = 'host.docker.internal'
+    try:
+        socket.gethostbyname(endpoint)
+        endpoint = f'http://{endpoint}:4566'
+    except:
+        logging.warning('Local dev instance cant resolve host.docker.internal, fallback to localhost')
+        endpoint='http://localhost:4566'
+
+    return endpoint
+
 
 def setup_logging():
     """
