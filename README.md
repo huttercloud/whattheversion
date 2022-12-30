@@ -20,6 +20,14 @@ The solution consists of multiple AWS components:
   - git-event: Triggered by api or cron-event to search for git tags
   - helm-api: Api Endpoint, queries for helm chart versions in dynamodb
   - helm-event: Triggered by api or cron-event to search for helm chart versions
+
+## usage
+
+The api endpoints are public and can be queries with POST.
+Depending on the endpoint a different request format is required. See the [swagger ui](https://whattheversion.hutter.cloud) for examples.
+
+If the git repository, docker repository or helm chart is queried for the first time the API will return a 404 and send an event to the corresponding event lambda which triggers a scan for the specified repository.
+
 ## development
 
 ### development ports
