@@ -39,14 +39,7 @@ start-api:
 #
 # layers
 #
-layers: layer-git layer-python layer-helm-to-json
-
-layer-helm-to-json: helper/helm-to-json/helm-to-json.linux
-	-rm -rf layers/helm-to-json
-	# two times the directory is no accident
-	# this puts the bin into '/opt/helm-to-json' in the layer which can be added to the path
-	mkdir -p layers/helm-to-json/helm-to-json/
-	cp helper/helm-to-json/helm-to-json.linux layers/helm-to-json/helm-to-json/helm-to-json
+layers: layer-git layer-python
 
 layer-git:
 	-rm -rf layers/git
@@ -61,6 +54,3 @@ layer-python:
 
 generate-git-zip:
 	cd helper/git-cli ; bash git-cli-amd64.sh
-
-generate-helm-to-json:
-	cd helper/helm-to-json ; bash helm-to-json.sh
