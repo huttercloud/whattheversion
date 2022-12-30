@@ -37,7 +37,7 @@ dynamodb:
 			--endpoint-url http://localhost:4566 >/dev/null
 
 eventbus:
-	@sleep3
+	@sleep 3
 	-AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local \
 		aws events --region eu-central-1 put-rule \
 			--name "DockerEvent" \
