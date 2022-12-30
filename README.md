@@ -3,6 +3,8 @@
 REST api to retrieve the latest available versions for git, docker images or helm charts.
 See the open api docs for the available endpoints with examples: https://whattheversion.hutter.cloud
 
+A script using the API can be in the repository [update-versions](https://github.com/huttercloud/update-versions) and github actions using the script to automatically update versions for terraform and helm can be found in the repositories [infrastructure](https://github.com/huttercloud/infrastructure/blob/main/.github/workflows/update-versions.yaml) and [applications](https://github.com/huttercloud/applications/blob/main/.github/workflows/update-versions.yaml).
+
 ## overview
 
 ![X-Ray Service Map](./x-ray-service-map.png)
