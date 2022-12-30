@@ -35,7 +35,17 @@ If the git repository, docker repository or helm chart is queried for the first 
 - http://localhost:8001: dynamodb web interface
 ### requirements
 - docker and docker-compose
-- aws sam
+- python3
+- aws sam cli
+
+### prepare venv
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
 
 ### start local dev environment
 
