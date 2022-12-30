@@ -4,7 +4,7 @@
 
 deploy: build sam-deploy swagger-ui
 
-dev: build dynamodb start-api
+dev: build localstack dynamodb eventbus start-api
 
 
 # publish
@@ -23,30 +23,44 @@ build: layers
 #
 # local dev
 #
+localstack:
+	docker-compose up -d
+
 dynamodb:
-	-docker-compose up -d
+	@sleep 3
 	-AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local \
 	    aws dynamodb --region eu-central-1 create-table \
-		--table-name whattheversion \
-		--attribute-definitions AttributeName=PK,AttributeType=S \
-		--key-schema AttributeName=PK,KeyType=HASH \
-		--billing-mode PAY_PER_REQUEST \
-		--endpoint-url http://localhost:8000
+			--table-name whattheversion \
+			--attribute-definitions AttributeName=PK,AttributeType=S \
+			--key-schema AttributeName=PK,KeyType=HASH \
+			--billing-mode PAY_PER_REQUEST \
+			--endpoint-url http://localhost:4566 >/dev/null
+
+eventbus:
+	@sleep 3
+	-AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local \
+		aws events --region eu-central-1 put-rule \
+			--name "DockerEvent" \
+			--event-pattern "{\"source\":[\"cloud.hutter.whattheversion\"],\"detail-type\":[\"Create or Update DynamoDB versions entry\"],\"detail\":{\"source\":[\"docker\"]}}" \
+			--endpoint-url http://localhost:4566
+	-AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local \
+		aws events --region eu-central-1 put-rule \
+			--name "GitEvent" \
+			--event-pattern "{\"source\":[\"cloud.hutter.whattheversion\"],\"detail-type\":[\"Create or Update DynamoDB versions entry\"],\"detail\":{\"source\":[\"git\"]}}" \
+			--endpoint-url http://localhost:4566
+	-AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local \
+		aws events --region eu-central-1 put-rule \
+			--name "HelmEvent" \
+			--event-pattern "{\"source\":[\"cloud.hutter.whattheversion\"],\"detail-type\":[\"Create or Update DynamoDB versions entry\"],\"detail\":{\"source\":[\"helm\"]}}" \
+			--endpoint-url http://localhost:4566
 
 start-api:
-	sam local start-api --warm-containers EAGER --env-vars $(PWD)/helper/dev/env-vars.json
+	sam local start-api --warm-containers EAGER --env-vars $(PWD)/helper/dev/env-vars.json --parameter-overrides ParameterKey=Environment,ParameterValue=LOCAL
 
 #
 # layers
 #
-layers: layer-git layer-python layer-helm-to-json
-
-layer-helm-to-json: helper/helm-to-json/helm-to-json.linux
-	-rm -rf layers/helm-to-json
-	# two times the directory is no accident
-	# this puts the bin into '/opt/helm-to-json' in the layer which can be added to the path
-	mkdir -p layers/helm-to-json/helm-to-json/
-	cp helper/helm-to-json/helm-to-json.linux layers/helm-to-json/helm-to-json/helm-to-json
+layers: layer-git layer-python
 
 layer-git:
 	-rm -rf layers/git
@@ -61,6 +75,3 @@ layer-python:
 
 generate-git-zip:
 	cd helper/git-cli ; bash git-cli-amd64.sh
-
-generate-helm-to-json:
-	cd helper/helm-to-json ; bash helm-to-json.sh

@@ -3,16 +3,12 @@
   "info": {
     "version": "1.0.0",
     "title": "whattheversion",
-    "description": "Retrieve the latest version for git tepo (git tag), a docker image (docker tag) or a helm chart (manifest version)"
+    "description": "REST api to retrieve the latest available versions for git, docker images or helm charts. See https://github.com/huttercloud/whattheversion for more details."
   },
   "servers": [
     {
       "url": "https://whattheversion.hutter.cloud/api",
       "description": "Public Api Endpoint"
-    },
-    {
-      "url": "http://127.0.0.1:3000/",
-      "description": "Development Server"
     }
   ],
   "paths": {

@@ -1,6 +1,6 @@
 import boto3
 from typing import Any
-
+from ..utils import is_local_dev, get_dev_endpoint
 from ..models import UpsertDynamoDBEvent, UpsertGitEventDetail, UpsertDockerEventDetail, UpsertHelmEventDetail
 
 class EventBusClient(object):
@@ -9,6 +9,15 @@ class EventBusClient(object):
     def __init__(self):
         self.client = boto3.client('events')
 
+        if is_local_dev():
+            self.client = boto3.client(
+                'events',
+                endpoint_url=get_dev_endpoint(),
+                region_name='eu-central-1',
+                aws_access_key_id='local',
+                aws_secret_access_key='local',
+            )
+            
 
     def put_git_event(self, repository: str):
         """

@@ -31,6 +31,18 @@ Parameters:
   LambdaLogLevel:
     Type: String
     Default: "WARNING"
+  OtelLayer:
+    Type: String
+    Default: arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1
+  Environment: 
+    Type: String
+    Default: AWS
+
+# thanks to: https://discuss.newrelic.com/t/feature-idea-lambda-layer-disable-for-aws-sam-local/188369
+Conditions : 
+  IsDevelopmentEnvironment: 
+    Fn::Equals: [!Ref "Environment", LOCAL]
+
 Resources:
   ##
   # cloudfront distribution
@@ -161,7 +173,6 @@ Resources:
      # configure all routes
      # the problem is that the lambda invoke permission isnt created
      # and I haven't found a way how to retrieve the route arn dynamically
-     # from sam/cf to reference it as source arn in "AWS::Lambda::Permission"
      # DefinitionBody:
      #   'Fn::Transform':
      #     Name: 'AWS::Include'
@@ -215,12 +226,18 @@ Resources:
       Architectures: ['x86_64']
       Timeout: 15
       Layers:
-        - !Ref FunctionLayer
-        - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
+        Fn::If:
+          - IsDevelopmentEnvironment
+          - [ !Ref FunctionLayer ]
+          - [ !Ref FunctionLayer, !Ref OtelLayer ]
       Environment:
         Variables:
           LOGLEVEL: !Ref LambdaLogLevel
-          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+          AWS_LAMBDA_EXEC_WRAPPER:
+            Fn::If:
+            - IsDevelopmentEnvironment
+            - !Ref AWS::NoValue
+            - /opt/otel-instrument 
       Policies:
         - DynamoDBReadPolicy:
             TableName:
@@ -247,12 +264,18 @@ Resources:
       Architectures: ['x86_64']
       Timeout: 15
       Layers:
-        - !Ref FunctionLayer
-        - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
+        Fn::If:
+          - IsDevelopmentEnvironment
+          - [ !Ref FunctionLayer ]
+          - [ !Ref FunctionLayer, !Ref OtelLayer ]
       Environment:
         Variables:
           LOGLEVEL: !Ref LambdaLogLevel
-          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+          AWS_LAMBDA_EXEC_WRAPPER:
+            Fn::If:
+            - IsDevelopmentEnvironment
+            - !Ref AWS::NoValue
+            - /opt/otel-instrument 
       Policies:
         - DynamoDBReadPolicy:
             TableName:
@@ -279,12 +302,18 @@ Resources:
       Architectures: ['x86_64']
       Timeout: 15
       Layers:
-        - !Ref FunctionLayer
-        - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
+        Fn::If:
+          - IsDevelopmentEnvironment
+          - [ !Ref FunctionLayer ]
+          - [ !Ref FunctionLayer, !Ref OtelLayer ]
       Environment:
         Variables:
           LOGLEVEL: !Ref LambdaLogLevel
-          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+          AWS_LAMBDA_EXEC_WRAPPER:
+            Fn::If:
+            - IsDevelopmentEnvironment
+            - !Ref AWS::NoValue
+            - /opt/otel-instrument 
       Policies:
         - DynamoDBReadPolicy:
             TableName:
@@ -315,13 +344,18 @@ Resources:
       Architectures: [ 'x86_64' ]
       Timeout: 900
       Layers:
-        - !Ref FunctionLayer
-        - !Ref GitLayer
-        - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
+        Fn::If:
+          - IsDevelopmentEnvironment
+          - [ !Ref FunctionLayer, !Ref GitLayer ]
+          - [ !Ref FunctionLayer, !Ref GitLayer, !Ref OtelLayer ]
       Environment:
         Variables:
           LOGLEVEL: !Ref LambdaLogLevel
-          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+          AWS_LAMBDA_EXEC_WRAPPER:
+            Fn::If:
+            - IsDevelopmentEnvironment
+            - !Ref AWS::NoValue
+            - /opt/otel-instrument 
       Policies:
         - DynamoDBCrudPolicy:
             TableName:
@@ -349,12 +383,18 @@ Resources:
       Architectures: ['x86_64']
       Timeout: 300
       Layers:
-        - !Ref FunctionLayer
-        - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
+        Fn::If:
+          - IsDevelopmentEnvironment
+          - [ !Ref FunctionLayer ]
+          - [ !Ref FunctionLayer, !Ref OtelLayer ]
       Environment:
         Variables:
           LOGLEVEL: !Ref LambdaLogLevel
-          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+          AWS_LAMBDA_EXEC_WRAPPER:
+            Fn::If:
+            - IsDevelopmentEnvironment
+            - !Ref AWS::NoValue
+            - /opt/otel-instrument 
       Policies:
         - DynamoDBCrudPolicy:
             TableName:
@@ -383,12 +423,18 @@ Resources:
       Architectures: ['x86_64']
       Timeout: 300
       Layers:
-        - !Ref FunctionLayer
-        - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
+        Fn::If:
+          - IsDevelopmentEnvironment
+          - [ !Ref FunctionLayer ]
+          - [ !Ref FunctionLayer, !Ref OtelLayer ]
       Environment:
         Variables:
           LOGLEVEL: !Ref LambdaLogLevel
-          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+          AWS_LAMBDA_EXEC_WRAPPER:
+            Fn::If:
+            - IsDevelopmentEnvironment
+            - !Ref AWS::NoValue
+            - /opt/otel-instrument 
       Policies:
         - DynamoDBCrudPolicy:
             TableName:
@@ -416,12 +462,18 @@ Resources:
       Architectures: ['x86_64']
       Timeout: 300
       Layers:
-        - !Ref FunctionLayer
-        - !Sub "arn:aws:lambda:eu-central-1:901920570463:layer:aws-otel-python-amd64-ver-1-15-0:1"
+        Fn::If:
+          - IsDevelopmentEnvironment
+          - [ !Ref FunctionLayer ]
+          - [ !Ref FunctionLayer, !Ref OtelLayer ]
       Environment:
         Variables:
           LOGLEVEL: !Ref LambdaLogLevel
-          AWS_LAMBDA_EXEC_WRAPPER: /opt/otel-instrument
+          AWS_LAMBDA_EXEC_WRAPPER:
+            Fn::If:
+            - IsDevelopmentEnvironment
+            - !Ref AWS::NoValue
+            - /opt/otel-instrument 
       Policies:
         - DynamoDBReadPolicy:
             TableName:

@@ -1,9 +1,8 @@
 import boto3
 from typing import Any, Dict, List
 from botocore.exceptions import ClientError
-from ..utils import ApiError, is_local_dev
+from ..utils import ApiError, is_local_dev, get_dev_endpoint
 import logging
-import socket
 from urllib.parse import urlparse
 from boto3.dynamodb.conditions import Key
 from ..models import GitTags, Versions, Version, DynamoDbEntry, HelmChart, DockerImageTags
@@ -19,17 +18,8 @@ class DynamoDbClient(object):
         try:
             resource = None
             if is_local_dev():
-
-                hostname = 'host.docker.internal'
-                try:
-                    socket.gethostbyname(hostname)
-                    hostname = f'http://{hostname}:8000'
-                except:
-                    logging.warning('Local dev instance cant resolve host.docker.internal, fallback to localhost')
-                    hostname='http://localhost:8000'
-
                 resource = boto3.resource('dynamodb',
-                                          endpoint_url=hostname,
+                                          endpoint_url=get_dev_endpoint(),
                                           region_name='eu-central-1',
                                           aws_access_key_id='local',
                                           aws_secret_access_key='local',
