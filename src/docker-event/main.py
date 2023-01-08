@@ -89,18 +89,23 @@ if __name__ == '__main__':
             # # dockerhub examples
             # repository='linuxserver/sabnzbd',
             # regexp='^[0-9]+\.?[0-9]+\.?[0-9]+$'
-            repository='filebrowser/filebrowser',
+            # repository='filebrowser/filebrowser',
             # regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$',
 
-            # k8s.gcr.io example
+            # # k8s.gcr.io example
             # registry='k8s.gcr.io',
             # repository='external-dns/external-dns',
             # regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$'
-            #
+
             # # quay.io example
             # registry='quay.io',
             # repository='oauth2-proxy/oauth2-proxy',
             # regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$'
+
+            # ghcr.io example
+            registry='ghcr.io',
+            repository='tautulli/tautulli',
+            regexp='^v[0-9]+\.?[0-9]+\.?[0-9]+$'
         )
     )
     handler(event, {})

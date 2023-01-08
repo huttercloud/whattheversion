@@ -88,12 +88,33 @@ class DockerRepositoryV2(object):
                                  )
                 r.raise_for_status()
 
+                # if the rerutned media type describes a manifest list, re-run the same query for
+                # for the first digest found in manifests list. the list does not contain
+                # direct references to blobs but to manufest digests (usually found for mutli arch builds)
+                response = r.json()
+                if response.get('mediaType', '') == 'application/vnd.docker.distribution.manifest.list.v2+json':
+                    r = requests.get(url=f'{self.repository_base_url}/manifests/{response["manifests"][0]["digest"]}',
+                                     headers={
+                                         **self.http_headers,
+                                         **{'Accept': 'application/vnd.docker.distribution.manifest.v2+json'}
+                                     }
+                                     )
+                    r.raise_for_status()
+                    response = r.json()
+
+                # the v2 manifest should have a config block but
+                # at least for ghcr repos this block is not available
+                digest = r.json().get('config', {}).get('digest', None)
+                if not digest:
+                    raise ValueError(f'Unable to find digest for tag {tag.Tag} in manifest: {response}')
+
                 docker_image_tags_with_digest.tags.append(
                     DockerImageTag(
                         tag=tag.tag,
-                        digest=r.json()['config']['digest']
+                        digest=digest
                     )
                 )
+
             except Exception as ex:
                 logging.warning(ex)
 

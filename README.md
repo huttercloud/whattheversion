@@ -30,6 +30,12 @@ Depending on the endpoint a different request format is required. See the [swagg
 
 If the git repository, docker repository or helm chart is queried for the first time the API will return a 404 and send an event to the corresponding event lambda which triggers a scan for the specified repository.
 
+## deploy
+
+simply run `make deploy`
+
+```bash
+
 ## development
 
 ### development ports
